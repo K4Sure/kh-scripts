@@ -1,0 +1,27 @@
+== CSML Cheatsheet v1.0.0-stable ==
+
+Arrows:
+ arrow_up    → ↑   (fallback: ^)
+ arrow_down  → ↓   (fallback: v)
+ arrow_left  → ←   (fallback: <)
+ arrow_right → →   (fallback: >)
+ arrow_both  → ↔   (fallback: <>)
+ arrow_vert  → ↕   (fallback: |)
+
+Stars:
+ star_full   → ★   (fallback: *)
+ star_empty  → ☆   (fallback: o)
+ star_four   → ✦   (fallback: +)
+ star_spark  → ✧   (fallback: .)
+
+Blocks:
+ block_full  → █   (fallback: #)
+ block_half  → ▓   (fallback: =)
+ block_mid   → ▒   (fallback: -)
+ block_light → ░   (fallback: .)
+
+Misc:
+ check       → ✔   (fallback: OK)
+ cross       → ✘   (fallback: X)
+ heart       → ♥   (fallback: <3)
+ music       → ♪   (fallback: ~)

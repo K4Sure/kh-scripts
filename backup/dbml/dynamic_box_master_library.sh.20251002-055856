@@ -1,0 +1,151 @@
+#!/bin/bash
+# Termux Dynamic Box Master Library v1.0
+# Pure box drawing library - styles and colors selected by calling scripts
+
+# Check if already loaded
+if [[ -n "$DBML_LOADED" ]]; then
+    return 0 2>/dev/null || exit 0
+fi
+
+# Library info
+DBML_VERSION="1.0.0"
+DBML_PATH="/data/data/com.termux/files/home/kh-scripts/library/dynamic_box"
+
+# Box style definitions
+declare -A DBML_BOX_STYLES=(
+    # Single Line
+    ["single_top_left"]="┌" ["single_top_right"]="┐"
+    ["single_bottom_left"]="└" ["single_bottom_right"]="┘"
+    ["single_horizontal"]="─" ["single_vertical"]="│"
+    
+    # Double Line
+    ["double_top_left"]="╔" ["double_top_right"]="╗"
+    ["double_bottom_left"]="╚" ["double_bottom_right"]="╝"
+    ["double_horizontal"]="═" ["double_vertical"]="║"
+    
+    # Rounded Corners
+    ["round_top_left"]="╭" ["round_top_right"]="╮"
+    ["round_bottom_left"]="╰" ["round_bottom_right"]="╯"
+    ["round_horizontal"]="─" ["round_vertical"]="│"
+    
+    # Bold/Thick Line
+    ["bold_top_left"]="┏" ["bold_top_right"]="┓"
+    ["bold_bottom_left"]="┗" ["bold_bottom_right"]="┛"
+    ["bold_horizontal"]="━" ["bold_vertical"]="┃"
+    
+    # Dotted Line
+    ["dotted_top_left"]="┌" ["dotted_top_right"]="┐"
+    ["dotted_bottom_left"]="└" ["dotted_bottom_right"]="┘"
+    ["dotted_horizontal"]="·" ["dotted_vertical"]="│"
+    
+    # Mixed Double-Single
+    ["double_single_top_left"]="╒" ["double_single_top_right"]="╕"
+    ["double_single_bottom_left"]="╘" ["double_single_bottom_right"]="╛"
+    ["double_single_horizontal"]="═" ["double_single_vertical"]="│"
+    
+    # Mixed Single-Double
+    ["single_double_top_left"]="╓" ["single_double_top_right"]="╖"
+    ["single_double_bottom_left"]="╙" ["single_double_bottom_right"]="╜"
+    ["single_double_horizontal"]="─" ["single_double_vertical"]="║"
+)
+
+# Available style names (for reference)
+DBML_AVAILABLE_STYLES="single double round bold dotted double_single single_double"
+
+# Utility functions
+dbml_get_terminal_width() {
+    tput cols 2>/dev/null || echo 80
+}
+
+dbml_repeat_char() {
+    printf "%*s" "$2" | tr " " "$1"
+}
+
+# Main box drawing function
+dbml_draw_box() {
+    local content="$1"
+    local style="${2:-single}"  # Default to single style
+    local title="${3:-}"
+    local border_color="$4"
+    local title_color="$5" 
+    local text_color="$6"
+    local width="${7:-40}"
+    local alignment="${8:-left}"
+    local padding="${9:-1}"
+    local reset_code="${10:-\033[0m}"
+    
+    # Get box characters for selected style
+    local tl="${DBML_BOX_STYLES[${style}_top_left]}"
+    local tr="${DBML_BOX_STYLES[${style}_top_right]}"
+    local bl="${DBML_BOX_STYLES[${style}_bottom_left]}"
+    local br="${DBML_BOX_STYLES[${style}_bottom_right]}"
+    local hz="${DBML_BOX_STYLES[${style}_horizontal]}"
+    local vt="${DBML_BOX_STYLES[${style}_vertical]}"
+    
+    # Calculate content width
+    local content_width=$((width - 2 - (padding * 2)))
+    
+    # Top border with title
+    printf "%b%s" "$border_color" "$tl"
+    if [[ -n "$title" ]]; then
+        local title_display="${title:0:$((content_width-2))}"
+        printf "%s" "$(dbml_repeat_char "$hz" 1)"
+        printf "%b %s %b" "$title_color" "$title_display" "$border_color"
+        printf "%s" "$(dbml_repeat_char "$hz" $((content_width - ${#title_display} - 1)))"
+    else
+        printf "%s" "$(dbml_repeat_char "$hz" $((width - 2)))"
+    fi
+    printf "%s%b\n" "$tr" "$reset_code"
+    
+    # Content lines
+    while IFS= read -r line; do
+        printf "%b%s" "$border_color" "$vt"
+        printf "%s" "$(dbml_repeat_char " " $padding)"
+        printf "%b%-${content_width}s%b" "$text_color" "$line" "$reset_code"
+        printf "%s" "$(dbml_repeat_char " " $padding)"
+        printf "%b%s%b\n" "$border_color" "$vt" "$reset_code"
+    done <<< "$content"
+    
+    # Bottom border
+    printf "%b%s" "$border_color" "$bl"
+    printf "%s" "$(dbml_repeat_char "$hz" $((width - 2)))"
+    printf "%s%b\n" "$br" "$reset_code"
+}
+
+# Centered box function
+dbml_draw_centered_box() {
+    local content="$1"
+    local style="$2"
+    local title="$3"
+    local border_color="$4"
+    local title_color="$5"
+    local text_color="$6"
+    local width="$7"
+    local padding="$8"
+    local reset_code="$9"
+    
+    local term_width=$(dbml_get_terminal_width)
+    local box_width=${width:-$((term_width / 2))}
+    local left_padding=$(( (term_width - box_width) / 2 ))
+    
+    printf "%*s" $left_padding ""
+    dbml_draw_box "$content" "$style" "$title" "$border_color" "$title_color" "$text_color" "$box_width" "left" "$padding" "$reset_code"
+}
+
+# Helper function to show available styles
+dbml_list_styles() {
+    echo "Available box styles: $DBML_AVAILABLE_STYLES"
+}
+
+# Export everything
+export DBML_VERSION DBML_PATH DBML_AVAILABLE_STYLES
+export -f dbml_get_terminal_width dbml_repeat_char 
+export -f dbml_draw_box dbml_draw_centered_box dbml_list_styles
+
+export DBML_LOADED=1
+
+if [[ $- == *i* ]] && [[ ${DBML_NO_BANNER:-0} -eq 0 ]]; then
+    echo "✓ Dynamic Box Library v$DBML_VERSION loaded"
+    echo "  Available styles: $DBML_AVAILABLE_STYLES"
+fi
+

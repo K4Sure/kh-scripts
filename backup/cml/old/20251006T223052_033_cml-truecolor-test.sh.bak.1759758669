@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -u
+
+CML_DIR="${CML_DIR:-$HOME/kh-scripts/library/colors}"
+ENGINE_FILE="$CML_DIR/cml-truecolor.sh"
+
+if [[ ! -f "$ENGINE_FILE" ]]; then
+  echo "Missing engine file: $ENGINE_FILE" >&2
+  exit 1
+fi
+
+# source engine (it prints a small banner)
+source "$ENGINE_FILE"
+
+echo
+echo "ENV: COLORTERM=$COLORTERM  TERM=$TERM"
+echo "Engine version: ${CML_TRUECOLOR_VERSION:-<unset>}"
+echo -n "Truecolor supported? "; cml_truecolor_supported && echo "YES" || echo "NO"
+echo
+
+# Three sample headers
+cml_apply_theme_gradient "=== TRUECOLOR ENGINE SELF-TEST ===" "NEON:PURPLE"
+cml_apply_theme_gradient "ENGINE VERSION: ${CML_TRUECOLOR_VERSION}" "NEON:BLUE"
+cml_apply_theme_gradient "CURRENT ACTIVE THEME: $(cml_refresh_theme)" "$(cml_refresh_theme)"
+echo
+
+# render a half-screen bar
+cml_render_gradient_bar
+
+# per-theme quick checks (auto iterate the known themes array)
+themes=(CLASSIC FOREST DESERT OCEAN SUMMER WINTER WILD "NEON:RED" "NEON:ORANGE" "NEON:YELLOW" "NEON:GREEN" "NEON:BLUE" "NEON:PURPLE")
+for t in "${themes[@]}"; do
+  cml_apply_theme_gradient "── TESTING THEME: ${t} ──" "$t"
+  cml_render_gradient_bar 36 "$t"
+  cml_apply_theme_gradient "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG" "$t"
+  echo
+done
+
+printf '✔ ALL TESTS PASSED IF COLORS AND GRADIENTS DISPLAY CORRECTLY.\n'

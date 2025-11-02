@@ -1,0 +1,133 @@
+# ==========================================
+# File: ~/kh-scripts/library/colors/cml-truecolor.sh
+# COLOR MASTER LIBRARY — TRUECOLOR ENGINE v1.1.0
+# ==========================================
+# SINGLE SOURCE OF TRUTH FOR ALL CML COLOR LOGIC
+# Provides RGB/HEX utilities, gradients, fallback colors,
+# and theme-based adaptive rendering.
+# ==========================================
+
+# AUTO-BACKUP (PRESERVE OLD VERSION)
+mkdir -p "$HOME/kh-scripts/backup"
+if [ -f "$HOME/kh-scripts/library/colors/cml-truecolor.sh" ]; then
+  cp "$HOME/kh-scripts/library/colors/cml-truecolor.sh" \
+     "$HOME/kh-scripts/backup/cml-truecolor_$(date +%Y%m%d_%H%M%S).bak"
+fi
+
+# ==========================================
+# TRUECOLOR ENGINE CORE
+# ==========================================
+CML_TRUECOLOR_VERSION="v1.1.0"
+
+# --- TRUECOLOR DETECTION ---
+cml_truecolor_supported() {
+  [ "${COLORTERM,,}" = "truecolor" ] || [ "${COLORTERM,,}" = "24bit" ]
+}
+
+# --- HEX → RGB CONVERSION ---
+hex_to_rgb() {
+  local hex="${1#"#"}"
+  printf "%d;%d;%d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+# --- RGB FOREGROUND / BACKGROUND ---
+rgb_fg() { printf "\033[38;2;%sm" "$1"; }
+rgb_bg() { printf "\033[48;2;%sm" "$1"; }
+
+# --- COLOR RESET ---
+cml_reset_color() { printf "\033[0m"; }
+
+# --- FALLBACK COLORS (INDEXED) ---
+cml_fallback_color() {
+  local idx="$1"
+  case "$idx" in
+    1) printf "\033[31m" ;; # RED
+    2) printf "\033[32m" ;; # GREEN
+    3) printf "\033[33m" ;; # YELLOW
+    4) printf "\033[34m" ;; # BLUE
+    5) printf "\033[35m" ;; # MAGENTA
+    6) printf "\033[36m" ;; # CYAN
+    *) printf "\033[37m" ;; # WHITE
+  esac
+}
+
+# --- THEME PALETTE LOADER ---
+cml_load_palette() {
+  local theme="${1^^}"
+  case "$theme" in
+    CLASSIC)
+      C1="255;255;255"; C2="128;128;128"; C3="255;215;0";;
+    NEON:RED)
+      C1="255;77;77"; C2="255;170;170"; C3="255;255;255";;
+    NEON:ORANGE)
+      C1="255;165;0"; C2="255;210;120"; C3="255;255;255";;
+    NEON:BLUE)
+      C1="77;166;255"; C2="180;220;255"; C3="255;255;255";;
+    *)
+      C1="200;200;200"; C2="150;150;150"; C3="255;255;255";;
+  esac
+}
+
+# --- THEME TITLE RENDERING ---
+cml_title() {
+  local text="$1"
+  local theme="${2:-CLASSIC}"
+  cml_load_palette "$theme"
+  if cml_truecolor_supported; then
+    printf "$(rgb_fg "$C1")=== %s ===$(cml_reset_color)\n" "$text"
+  else
+    printf "=== %s ===\n" "$text"
+  fi
+}
+
+# --- THEME GRADIENT APPLICATION ---
+cml_apply_theme_gradient() {
+  local text="$1"
+  local theme="${2:-CLASSIC}"
+  cml_load_palette "$theme"
+
+  # Split RGB for gradient math
+  IFS=';' read -r r1 g1 b1 <<< "$C1"
+  IFS=';' read -r r2 g2 b2 <<< "$C2"
+
+  local len=${#text}
+  for ((i=0; i<len; i++)); do
+    local ratio=$(( i * 100 / (len - 1) ))
+    local r=$(( r1 + (r2 - r1) * ratio / 100 ))
+    local g=$(( g1 + (g2 - g1) * ratio / 100 ))
+    local b=$(( b1 + (b2 - b1) * ratio / 100 ))
+    printf "\033[38;2;%d;%d;%dm%s" "$r" "$g" "$b" "${text:i:1}"
+  done
+  cml_reset_color
+  echo
+}
+
+# --- GRADIENT BAR RENDERER ---
+cml_render_gradient_bar() {
+  local width="${1:-40}"
+  local theme="${2:-CLASSIC}"
+  cml_load_palette "$theme"
+
+  IFS=';' read -r r1 g1 b1 <<< "$C1"
+  IFS=';' read -r r2 g2 b2 <<< "$C2"
+
+  for ((i=0; i<width; i++)); do
+    local ratio=$(( i * 100 / (width - 1) ))
+    local r=$(( r1 + (r2 - r1) * ratio / 100 ))
+    local g=$(( g1 + (g2 - g1) * ratio / 100 ))
+    local b=$(( b1 + (b2 - b1) * ratio / 100 ))
+    printf "\033[48;2;%d;%d;%dm " "$r" "$g" "$b"
+  done
+  cml_reset_color
+  echo
+}
+
+# --- COLORIZE TEXT (SINGLE SHADE) ---
+cml_colorize() {
+  local text="$1"; local color="$2"
+  if cml_truecolor_supported; then
+    printf "$(rgb_fg "$color")%s$(cml_reset_color)" "$text"
+  else
+    printf "%s" "$text"
+  fi
+}

@@ -1,0 +1,27 @@
+#!/bin/bash
+# CSML v1.1.0-upgrade - Symbol lookup with fallback support
+
+MAP=~/kh-scripts/library/symbols/symbols-map.txt
+FALLBACK=0
+
+# Detect fallback flag
+if [[ "$1" == "--fallback" ]]; then
+  FALLBACK=1
+  shift
+fi
+
+SYMBOL_NAME="$1"
+
+# Lookup
+while IFS='|' read -r name utf8 fallback; do
+  [[ "$name" == "$SYMBOL_NAME" ]] || continue
+  if [[ $FALLBACK -eq 1 ]]; then
+    echo "$fallback"
+  else
+    echo "$utf8"
+  fi
+  exit 0
+done < "$MAP"
+
+# Not found
+echo "?"

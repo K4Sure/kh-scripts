@@ -1,0 +1,118 @@
+#!/usr/bin/env bash
+# File: ~/kh-scripts/library/colors/cml-truecolor.sh
+# COLOR MASTER LIBRARY - TRUECOLOR ENGINE
+# Version: v1.3.0 (Expansion Pack)
+# ------------------------------------------------------------
+# Core hybrid TrueColor engine used by CML, DBML, and CSML.
+# - Auto truecolor detection
+# - Gradient bar generator (half screen width)
+# - Palette + RGB functions
+# - Extended themes (10+)
+# ------------------------------------------------------------
+
+CML_TRUECOLOR_VERSION="v1.3.0"
+
+# === TRUECOLOR SUPPORT DETECTION ===
+cml_truecolor_supported() {
+  [[ "$COLORTERM" == *"truecolor"* || "$COLORTERM" == *"24bit"* ]]
+}
+
+# === HEX TO RGB ===
+hex_to_rgb() {
+  local hex="${1#\#}"
+  local r=$((16#${hex:0:2}))
+  local g=$((16#${hex:2:2}))
+  local b=$((16#${hex:4:2}))
+  printf "%d;%d;%d" "$r" "$g" "$b"
+}
+
+# === RGB FOREGROUND / BACKGROUND ===
+rgb_fg() { printf "\033[38;2;%sm" "$(hex_to_rgb "$1")"; }
+rgb_bg() { printf "\033[48;2;%sm" "$(hex_to_rgb "$1")"; }
+rgb_reset() { printf "\033[0m"; }
+
+# === SCREEN WIDTH DETECTOR (HALF WIDTH) ===
+cml_half_width() {
+  local cols
+  cols=$(tput cols 2>/dev/null || echo 80)
+  echo $((cols / 2))
+}
+
+# === GRADIENT BAR ===
+cml_render_gradient_bar() {
+  local theme="${1^^}"
+  local width
+  width=$(cml_half_width)
+  local colors=()
+
+  case "$theme" in
+    CLASSIC) colors=( "#FF0000" "#FFFF00" "#00FF00" "#00FFFF" "#0000FF" "#FF00FF" );;
+    NEON:RED) colors=( "#FF0040" "#FF0080" "#FF00C0" "#FF40FF" );;
+    NEON:ORANGE) colors=( "#FF8000" "#FFB000" "#FFD000" "#FFFF00" );;
+    NEON:BLUE) colors=( "#0066FF" "#0099FF" "#00CCFF" "#00FFFF" );;
+    NEON:PURPLE) colors=( "#8000FF" "#A000FF" "#C000FF" "#E000FF" );;
+    FOREST) colors=( "#003300" "#006600" "#009933" "#33CC33" "#66FF66" );;
+    DESERT) colors=( "#C19A6B" "#D2B48C" "#E0C097" "#F0D8A8" "#FFF0C2" );;
+    OCEAN) colors=( "#001F3F" "#003366" "#006699" "#0099CC" "#00CCFF" );;
+    SUMMER) colors=( "#FF6600" "#FF9933" "#FFCC33" "#FFFF66" "#99FF99" );;
+    WINTER) colors=( "#99CCFF" "#66B2FF" "#3399FF" "#0066CC" "#003366" );;
+    WILD) colors=( "#FF1493" "#FF4500" "#FFD700" "#32CD32" "#00BFFF" "#8A2BE2" );;
+    *) colors=( "#FFFFFF" "#AAAAAA" "#555555" "#000000" );;
+  esac
+
+  local color_count=${#colors[@]}
+  local seg_width=$((width / color_count))
+  local i j
+
+  for ((i = 0; i < color_count; i++)); do
+    for ((j = 0; j < seg_width; j++)); do
+      printf "%s▀" "$(rgb_fg "${colors[i]}")"
+    done
+  done
+  rgb_reset
+  echo
+}
+
+# === APPLY THEME GRADIENT TITLE ===
+cml_apply_theme_gradient() {
+  local text="$1"
+  local theme="${2^^}"
+  cml_render_gradient_bar "$theme"
+  printf "%s%s%s\n" "$(rgb_fg '#FFFFFF')" "$text" "$(rgb_reset)"
+  cml_render_gradient_bar "$theme"
+}
+
+# === TITLE RENDER ===
+cml_title() {
+  local text="$1"
+  printf "\n%s%s%s\n" "$(rgb_fg '#00FFFF')" "$text" "$(rgb_reset)"
+}
+
+# === FALLBACK COLOR ===
+cml_fallback_color() {
+  local index="$1"
+  local colors=(31 32 33 34 35 36)
+  printf "\033[%sm" "${colors[$((index % 6))]}"
+}
+
+# === LOAD PALETTE ===
+cml_load_palette() {
+  local theme="${1^^}"
+  case "$theme" in
+    CLASSIC)   C_PRIMARY="#FFFFFF"; C_SECONDARY="#AAAAAA";;
+    NEON:RED)  C_PRIMARY="#FF0040"; C_SECONDARY="#FF80A0";;
+    NEON:ORANGE) C_PRIMARY="#FF8000"; C_SECONDARY="#FFD080";;
+    NEON:BLUE) C_PRIMARY="#00A0FF"; C_SECONDARY="#80D0FF";;
+    NEON:PURPLE) C_PRIMARY="#C000FF"; C_SECONDARY="#E0A0FF";;
+    FOREST)    C_PRIMARY="#00FF66"; C_SECONDARY="#228B22";;
+    DESERT)    C_PRIMARY="#E0C097"; C_SECONDARY="#C19A6B";;
+    OCEAN)     C_PRIMARY="#00AACC"; C_SECONDARY="#004488";;
+    SUMMER)    C_PRIMARY="#FFB200"; C_SECONDARY="#FF6600";;
+    WINTER)    C_PRIMARY="#66B2FF"; C_SECONDARY="#003366";;
+    WILD)      C_PRIMARY="#FF1493"; C_SECONDARY="#FFD700";;
+    *)         C_PRIMARY="#FFFFFF"; C_SECONDARY="#CCCCCC";;
+  esac
+}
+
+# === LOAD SUCCESS MESSAGE ===
+printf "✔ COLOR MASTER TRUECOLOR ENGINE LOADED (%s)\n" "$CML_TRUECOLOR_VERSION"

@@ -1,0 +1,114 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# SMART BACKUP MANAGER (SBM)
+# Version: v2.0.4
+# Author: KH
+# Purpose: Maintain organized backups without recursion
+# Notes: Processes only files directly in target directory, or a single file if specified.
+
+SCRIPT_VERSION="v2.0.4"
+SOURCE_PATH="${1:-/data/data/com.termux/files/home/kh-scripts}"   # path can be dir or file
+BACKUP_ROOT="/data/data/com.termux/files/home/kh-scripts/backup"
+TIMESTAMP=$(date +"%Y%m%d_%H%M")
+DRY_RUN=false  # set true for test mode
+
+echo "SMART BACKUP MANAGER $SCRIPT_VERSION"
+echo "SOURCE: $SOURCE_PATH"
+echo "BACKUP: $BACKUP_ROOT"
+echo "TIMESTAMP: $TIMESTAMP"
+echo "--------------------------------------------"
+
+mkdir -p "$BACKUP_ROOT"
+
+# Associative arrays for grouping
+declare -A groups latest latest_path
+
+# Function to safely back up a single file
+backup_single_file() {
+  local file="$1"
+  [ -f "$file" ] || { echo "❌ INVALID FILE: $file"; return 1; }
+
+  base=$(basename "$file")
+  [[ "$base" == "sbm" ]] && { echo "✔ KEEP ACTIVE SBM IN PLACE: ${base^^}"; return 0; }
+
+  dest="${BACKUP_ROOT}/${base}_${TIMESTAMP}.backup"
+  if $DRY_RUN; then
+    echo "ℹ DRY-RUN: WOULD MOVE: $file → $(basename "$dest")"
+  else
+    mv -f "$file" "$dest" && echo "✔ MOVED TO BACKUP: ${base^^}"
+  fi
+}
+
+# If input path is a single file
+if [ -f "$SOURCE_PATH" ]; then
+  backup_single_file "$SOURCE_PATH"
+  echo "--------------------------------------------"
+  if $DRY_RUN; then
+    echo "ℹ DRY-RUN COMPLETE: SINGLE FILE MODE ($TIMESTAMP)"
+  else
+    echo "✔ BACKUP COMPLETE: SINGLE FILE MODE ($TIMESTAMP)"
+  fi
+  exit 0
+fi
+
+# If input path is not a directory
+if [ ! -d "$SOURCE_PATH" ]; then
+  echo "❌ INVALID PATH: $SOURCE_PATH"
+  exit 1
+fi
+
+# Collect files in directory (flat only)
+while IFS= read -r file; do
+  [ -f "$file" ] || continue
+  base=$(basename "$file")
+
+  # Skip internal folders
+  [[ "$file" == *"/backup/"* ]] && continue
+  [[ "$file" == *"/logs/"* ]] && continue
+
+  # Skip active SBM script
+  [[ "$base" == "sbm" ]] && {
+    echo "✔ KEEP ACTIVE SBM IN PLACE: ${base^^}"
+    continue
+  }
+
+  # Group key (file prefix before first dot)
+  key="${base%%.*}"
+  groups["$key"]=1
+
+  # Track latest by modification time
+  ts=$(stat -c "%Y" "$file")
+  if [[ ! -v latest["$key"] ]] || (( ts > latest["$key"] )); then
+    latest["$key"]=$ts
+    latest_path["$key"]="$file"
+  fi
+done < <(find "$SOURCE_PATH" -maxdepth 1 -type f)
+
+# Move older versions to backup
+for key in "${!groups[@]}"; do
+  keep="${latest_path[$key]}"
+  [ -z "$keep" ] && continue
+  keep_base=$(basename "$keep")
+  echo "✔ KEEP LATEST IN SOURCE: ${keep_base^^}"
+
+  for f in "$SOURCE_PATH"/"$key"*; do
+    [ -f "$f" ] || continue
+    [[ "$f" == "$keep" ]] && continue
+
+    basef=$(basename "$f")
+    dest="${BACKUP_ROOT}/${basef}_${TIMESTAMP}.backup"
+
+    if $DRY_RUN; then
+      echo "ℹ DRY-RUN: WOULD MOVE: $f → $(basename "$dest")"
+    else
+      mv -f "$f" "$dest" && echo "✔ MOVED TO BACKUP: ${basef^^}"
+    fi
+  done
+done
+
+# Completion message
+echo "--------------------------------------------"
+if $DRY_RUN; then
+  echo "ℹ DRY-RUN COMPLETE: KH-SCRIPTS_${TIMESTAMP}.BACKUP (NO FILES MOVED)"
+else
+  echo "✔ BACKUP COMPLETE: KH-SCRIPTS_${TIMESTAMP}.BACKUP"
+fi

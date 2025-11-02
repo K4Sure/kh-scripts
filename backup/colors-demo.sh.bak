@@ -1,0 +1,91 @@
+#!/bin/bash
+# ===============================================
+# FILE: ~/kh-scripts/library/colors/colors-demo.sh
+# DESCRIPTION: Full Colors Demo & Theme Parade (CML v4.0.0)
+# ===============================================
+
+source ~/kh-scripts/library/colors/cml.sh
+source ~/kh-scripts/library/colors/global-scripts-theme.sh
+
+RESET="\033[0m"
+
+# ===============
+# NORMAL DEMO MODE
+# ===============
+cml_demo_normal() {
+    echo -e "\n\033[1;36mCML demo — version: v4.0.0\033[0m\n"
+
+    # ANSI
+    echo -e "\033[1;33m-- ANSI (Basic 16 Colors) --\033[0m"
+    echo -e "\033[1mBold\033[0m"
+    echo -e "\033[4mUnderline\033[0m"
+    echo -e "\033[31mRed\033[0m \033[32mGreen\033[0m \033[34mBlue\033[0m"
+    echo
+
+    # 256
+    echo -e "\033[1;33m-- 256-Color Palette (Samples) --\033[0m"
+    for i in {16..27}; do
+        echo -ne "\033[48;5;${i}m  ${i}  ${RESET}"
+    done
+    echo -e "\n"
+
+    # RGB
+    echo -e "\033[1;33m-- RGB / TrueColor --\033[0m"
+    echo -e "\033[38;2;255;0;0mRGB Red\033[0m"
+    echo -e "\033[38;2;0;255;0mRGB Green\033[0m"
+    echo -e "\033[38;2;0;0;255mRGB Blue\033[0m"
+    echo
+
+    # Themes
+    echo -e "\033[1;33m-- Theme Parade --\033[0m"
+    themes=("Classic" "Neon" "Forest" "Summer" "Winter")
+    for t in "${themes[@]}"; do
+        CML_THEME="$t"
+        apply_theme
+        echo -e "${CML_FG}${CML_BG}   ${t} Theme in Action   ${RESET}"
+    done
+    echo
+
+    # Cheatsheet
+    echo -e "\033[1;33m-- Cheatsheet Quick Ref --\033[0m"
+    cat <<EOF
+  cml ansi 1 31        # bold red
+  cml fg256 196        # bright red (256)
+  cml rgb fg 255 0 0   # truecolor red
+  cml theme            # theme selector
+  cml new              # new script template
+EOF
+
+    echo -e "\n\033[1;36m✔ Demo complete! Enjoy the colors.\033[0m\n"
+}
+
+# ======================
+# PARADE MODE (Lightshow)
+# ======================
+cml_demo_parade() {
+    echo -e "\n\033[1;36m🎆 Welcome to the CML Parade Mode 🎆\033[0m"
+    echo -e "Cycling through all themes in true colors...\n"
+
+    themes=("Classic" "Neon" "Forest" "Summer" "Winter")
+    for t in "${themes[@]}"; do
+        CML_THEME="$t"
+        apply_theme
+        echo -e "${CML_FG}${CML_BG}   ${t} THEME PARADE   ${RESET}"
+        sleep 1
+    done
+
+    echo -e "\n\033[1;36m✔ Parade complete. Pick your favorite theme with 'cml theme'.\033[0m\n"
+}
+
+# =================
+# MAIN ENTRY POINT
+# =================
+case "$1" in
+    parade)
+        cml_demo_parade
+        ;;
+    *)
+        cml_demo_normal
+        ;;
+esac
+

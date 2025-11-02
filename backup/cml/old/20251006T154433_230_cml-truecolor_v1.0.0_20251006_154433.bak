@@ -1,0 +1,258 @@
+#!/usr/bin/env bash
+# ===============================================================
+#  COLOR MASTER LIBRARY (CML) - TRUECOLOR ENGINE
+#  VERSION: v1.0.0
+#  PURPOSE: Single source of truth for TrueColor + fallback color logic
+# ===============================================================
+#
+# NOTE: This file auto-creates a backup of any previous version
+#       at load time when overwritten by installation scripts.
+#
+# STANDARDS:
+# - NO tr usage
+# - THEME READ/WRITE STANDARD followed
+# - AUTO-DEFAULT THEME: CLASSIC
+# - UPPERCASE SYSTEM MESSAGES
+#
+# API FUNCTIONS:
+# - cml_truecolor_supported
+# - hex_to_rgb
+# - rgb_fg / rgb_bg
+# - cml_fallback_color
+# - cml_colorize
+# - cml_load_palette
+# - cml_title
+#
+# ===============================================================
+
+# === BACKUP EXISTING FILE (IF PRESENT) ===
+CML_BACKUP_DIR="${CML_BACKUP_DIR:-$HOME/kh-scripts/backup}"
+mkdir -p "$CML_BACKUP_DIR"
+SRC_FILE="$HOME/kh-scripts/library/colors/cml-truecolor.sh"
+if [ -f "$SRC_FILE" ]; then
+  cp "$SRC_FILE" "$CML_BACKUP_DIR/cml-truecolor_v1.0.0_$(date +%Y%m%d_%H%M%S).bak"
+  printf '✔ BACKUP CREATED: %s\n' "$CML_BACKUP_DIR/$(basename "$SRC_FILE")"
+else
+  printf 'ℹ NO EXISTING FILE FOUND — SKIPPING BACKUP\n'
+fi
+
+# ===============================================================
+# GLOBALS
+# ===============================================================
+CML_TRUECOLOR_VERSION="v1.0.0"
+CML_DIR="${CML_DIR:-$HOME/kh-scripts/library/colors}"
+THEME_FILE="${THEME_FILE:-$CML_DIR/.cml_theme}"
+CML_RESET="\033[0m"
+
+# ===============================================================
+# THEME READ (NO tr) + AUTO-DEFAULT
+# ===============================================================
+if [ -f "$THEME_FILE" ]; then
+  CURRENT_THEME=$(< "$THEME_FILE")
+  CURRENT_THEME="${CURRENT_THEME//[$'\r\n']/}"
+  CURRENT_THEME="${CURRENT_THEME^^}"
+else
+  CURRENT_THEME=""
+fi
+
+if [ -z "$CURRENT_THEME" ]; then
+  CURRENT_THEME="CLASSIC"
+  printf "%s" "$CURRENT_THEME" > "$THEME_FILE"
+  sync
+fi
+
+# ===============================================================
+# CORE: TRUECOLOR DETECTION
+# ===============================================================
+cml_truecolor_supported() {
+  if [[ "${COLORTERM:-}" == *truecolor* || "${TERM:-}" == *-truecolor ]]; then
+    return 0  # supported
+  fi
+  return 1    # not supported
+}
+
+# ===============================================================
+# HEX -> RGB (handles #RRGGBB and #RGB)
+# Returns: "R G B"
+# ===============================================================
+hex_to_rgb() {
+  local hex="${1##\#}"
+  # normalize short form: e.g., 'f0a' -> 'ff00aa'
+  if [ "${#hex}" -eq 3 ]; then
+    hex="${hex:0:1}${hex:0:1}${hex:1:1}${hex:1:1}${hex:2:1}${hex:2:1}"
+  fi
+  # safety: pad/truncate to 6
+  hex="${hex:0:6}"
+  local r=$((16#${hex:0:2}))
+  local g=$((16#${hex:2:2}))
+  local b=$((16#${hex:4:2}))
+  printf '%d %d %d' "$r" "$g" "$b"
+}
+
+# ===============================================================
+# 24-bit RGB ESCAPES
+# ===============================================================
+rgb_fg() { printf '\033[38;2;%d;%d;%dm' "$1" "$2" "$3"; }
+rgb_bg() { printf '\033[48;2;%d;%d;%dm' "$1" "$2" "$3"; }
+
+# ===============================================================
+# 256-COLOR FALLBACK CONVERTER
+# Input: R G B (0-255)
+# Output: escape string for foreground 38;5;N
+# ===============================================================
+cml_fallback_color() {
+  local r="$1" g="$2" b="$3"
+  # map to 6x6x6 color cube
+  local r6=$(( r * 6 / 256 )) ; local g6=$(( g * 6 / 256 )) ; local b6=$(( b * 6 / 256 ))
+  local idx=$((16 + 36*r6 + 6*g6 + b6))
+  printf '\033[38;5;%dm' "$idx"
+}
+
+# ===============================================================
+# cml_colorize "text" "#RRGGBB" [bg]
+# If third arg is "bg" or "background" the color is used as background.
+# ===============================================================
+cml_colorize() {
+  local text="$1"; local hex="${2:-}"; local mode="${3:-fg}"
+  if [ -z "$hex" ]; then
+    printf '%s' "$text"
+    return 0
+  fi
+  # convert hex to rgb
+  read -r r g b <<< "$(hex_to_rgb "$hex")"
+  if cml_truecolor_supported; then
+    if [ "$mode" = "bg" ] || [ "$mode" = "background" ]; then
+      printf '%b%s%b' "$(rgb_bg "$r" "$g" "$b")" "$text" "$CML_RESET"
+    else
+      printf '%b%s%b' "$(rgb_fg "$r" "$g" "$b")" "$text" "$CML_RESET"
+    fi
+  else
+    # fallback to 256-color
+    local esc; esc="$(cml_fallback_color "$r" "$g" "$b")"
+    if [ "$mode" = "bg" ] || [ "$mode" = "background" ]; then
+      # convert 38;5 to 48;5 for background
+      esc="${esc/38;5/48;5}"
+      printf '%b%s%b' "$esc" "$text" "$CML_RESET"
+    else
+      printf '%b%s%b' "$esc" "$text" "$CML_RESET"
+    fi
+  fi
+}
+
+# ===============================================================
+# cml_load_palette "THEME"
+# - sets C_*_HEX variables and ready-to-use escape vars: C_TITLE, C_ACCENT, C_TEXT
+# - theme names: CLASSIC, NEON:RED, NEON:PINK, FOREST, OCEAN, WILD, DARKWAVE, MINIMAL
+# ===============================================================
+cml_load_palette() {
+  local theme="${1:-$CURRENT_THEME}"
+  theme="${theme^^}"
+
+  local base="${theme%%:*}"
+  local variant="${theme#*:}"
+  [ "$variant" = "$base" ] && variant=""
+
+  case "$base" in
+    CLASSIC)
+      C_TITLE_HEX="#FFD700"; C_ACCENT_HEX="#00BFFF"; C_TEXT_HEX="#FFFFFF";;
+    NEON)
+      case "${variant}" in
+        RED) C_TITLE_HEX="#FF004F";;
+        PINK) C_TITLE_HEX="#FF2D95";;
+        GREEN) C_TITLE_HEX="#39FF14";;
+        *) C_TITLE_HEX="#FF2D95";;
+      esac
+      C_ACCENT_HEX="#00FFF0"; C_TEXT_HEX="#0A0A0A";;
+    FOREST)
+      C_TITLE_HEX="#2E8B57"; C_ACCENT_HEX="#8FBC8F"; C_TEXT_HEX="#E6F2E6";;
+    OCEAN)
+      C_TITLE_HEX="#00B4D8"; C_ACCENT_HEX="#0077B6"; C_TEXT_HEX="#E8F6FF";;
+    DARKWAVE)
+      C_TITLE_HEX="#9400D3"; C_ACCENT_HEX="#00FFFF"; C_TEXT_HEX="#F8F8FF";;
+    WILD)
+      # deterministic pseudo-random based on time to avoid unpredictable large changes
+      local t; t=$(date +%s)
+      local r=$(( (t % 200) + 30 ))
+      local g=$(( ((t / 3) % 200) + 30 ))
+      local b=$(( ((t / 7) % 200) + 30 ))
+      C_TITLE_HEX="$(printf '#%02X%02X%02X' $r $g $b)"
+      C_ACCENT_HEX="$(printf '#%02X%02X%02X' $((255-r)) $((255-g)) $((255-b)) )"
+      C_TEXT_HEX="#F0F0F0";;
+    MINIMAL)
+      C_TITLE_HEX="#BDBDBD"; C_ACCENT_HEX="#9E9E9E"; C_TEXT_HEX="#FFFFFF";;
+    *)
+      C_TITLE_HEX="#FFD700"; C_ACCENT_HEX="#00BFFF"; C_TEXT_HEX="#FFFFFF";;
+  esac
+
+  # prepare escape vars for quick use
+  read -r r1 g1 b1 <<< "$(hex_to_rgb "$C_TITLE_HEX")"
+  read -r r2 g2 b2 <<< "$(hex_to_rgb "$C_ACCENT_HEX")"
+  read -r rt gt bt <<< "$(hex_to_rgb "$C_TEXT_HEX")"
+
+  if cml_truecolor_supported; then
+    C_TITLE="$(rgb_fg "$r1" "$g1" "$b1")"
+    C_ACCENT="$(rgb_fg "$r2" "$g2" "$b2")"
+    C_TEXT="$(rgb_fg "$rt" "$gt" "$bt")"
+  else
+    C_TITLE="$(cml_fallback_color "$r1" "$g1" "$b1")"
+    C_ACCENT="$(cml_fallback_color "$r2" "$g2" "$b2")"
+    C_TEXT="$(cml_fallback_color "$rt" "$gt" "$bt")"
+  fi
+
+  C_RESET="$CML_RESET"
+}
+
+# ===============================================================
+# cml_title "TEXT"
+# Prints a small gradient title using C_TITLE_HEX -> C_ACCENT_HEX
+# ===============================================================
+cml_title() {
+  local text="${*}"
+  [ -z "$text" ] && return 0
+
+  # ensure palette loaded
+  cml_load_palette "$CURRENT_THEME"
+
+  # compute rgb endpoints
+  read -r r1 g1 b1 <<< "$(hex_to_rgb "$C_TITLE_HEX")"
+  read -r r2 g2 b2 <<< "$(hex_to_rgb "$C_ACCENT_HEX")"
+
+  local len=${#text}
+  local i=0
+  local out=""
+
+  if [ "$len" -le 1 ]; then
+    # single char/title: print with title color
+    cml_colorize "$text" "$C_TITLE_HEX"
+    printf '\n'
+    return 0
+  fi
+
+  for ((i=0;i<len;i++)); do
+    local ch="${text:i:1}"
+    local denom=$(( len - 1 ))
+    # linear interpolation (integer arithmetic)
+    local rr=$(( r1 + ( (r2 - r1) * i / denom ) ))
+    local gg=$(( g1 + ( (g2 - g1) * i / denom ) ))
+    local bb=$(( b1 + ( (b2 - b1) * i / denom ) ))
+
+    if cml_truecolor_supported; then
+      out+="$(rgb_fg "$rr" "$gg" "$bb")$ch$CML_RESET"
+    else
+      # fallback to 256 color escape
+      out+="$(cml_fallback_color "$rr" "$gg" "$bb")$ch$CML_RESET"
+    fi
+  done
+
+  printf '%b\n' "$out"
+}
+
+# ===============================================================
+# Initialize palette on source
+# ===============================================================
+cml_load_palette "$CURRENT_THEME"
+
+# ===============================================================
+# ENGINE READY MESSAGE (UPPERCASE)
+# ===============================================================
+printf '✔ CML TRUECOLOR ENGINE LOADED (VERSION: %s, THEME: %s)\n' "$CML_TRUECOLOR_VERSION" "$CURRENT_THEME"

@@ -1,0 +1,7 @@
+# Load .bashrc if available
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+
+# Run daily updater
+tupdate

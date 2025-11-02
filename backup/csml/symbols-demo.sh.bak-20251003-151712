@@ -1,0 +1,39 @@
+#!/bin/bash
+# CSML Demo v1.0.0
+
+source ~/kh-scripts/library/symbols/symbols.sh
+
+echo "== Characters & Symbols Master Library Demo =="
+echo "CSML v1.0.0"
+echo
+
+echo "Box Drawing (single):"
+echo "$(csym box_single_tl)$(csym box_single_h)$(csym box_single_h)$(csym box_single_tr)"
+echo "$(csym box_single_v)  $(csym box_single_v)"
+echo "$(csym box_single_bl)$(csym box_single_h)$(csym box_single_h)$(csym box_single_br)"
+echo
+
+echo "Box Drawing (double):"
+echo "$(csym box_double_tl)$(csym box_double_h)$(csym box_double_h)$(csym box_double_tr)"
+echo "$(csym box_double_v)  $(csym box_double_v)"
+echo "$(csym box_double_bl)$(csym box_double_h)$(csym box_double_h)$(csym box_double_br)"
+echo
+
+echo "Box Drawing (rounded):"
+echo "$(csym box_round_tl)$(csym box_single_h)$(csym box_single_h)$(csym box_round_tr)"
+echo "$(csym box_single_v)  $(csym box_single_v)"
+echo "$(csym box_round_bl)$(csym box_single_h)$(csym box_single_h)$(csym box_round_br)"
+echo
+
+echo "Arrows:"
+echo "Up:    $(csym arrow_up)"
+echo "Down:  $(csym arrow_down)"
+echo "Left:  $(csym arrow_left)"
+echo "Right: $(csym arrow_right)"
+echo "Both:  $(csym arrow_both_h), $(csym arrow_both_v)"
+echo
+
+echo "Stars:"
+echo "Filled: $(csym star_filled)"
+echo "Hollow: $(csym star_hollow)"
+echo "Alt:    $(csym star_alt)"

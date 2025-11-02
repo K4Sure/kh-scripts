@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+# cml-init.sh — Central loader for CML
+# Version: v1.0.0-modern
+# Purpose: Initialize CML core, TrueColor engine, shortcuts, aliases, and theme management
+
+CML_DIR="$HOME/kh-scripts/library/colors"
+THEME_FILE="$CML_DIR/.cml_theme"
+
+# ----------------------------
+# Load CML Core & TrueColor
+# ----------------------------
+[ -f "$CML_DIR/cml.sh" ] && source "$CML_DIR/cml.sh"
+[ -f "$CML_DIR/cml-truecolor.sh" ] && source "$CML_DIR/cml-truecolor.sh"
+
+# ----------------------------
+# Default theme file check
+# ----------------------------
+mkdir -p "$CML_DIR"
+[ -f "$THEME_FILE" ] || echo "CLASSIC" > "$THEME_FILE"
+
+# ----------------------------
+# Function to read current theme
+# ----------------------------
+cml_read_theme() {
+    CURRENT_THEME=$(< "$THEME_FILE")
+    CURRENT_THEME="${CURRENT_THEME//[$'\r\n']/}"
+    CURRENT_THEME="${CURRENT_THEME^^}"
+}
+
+# ----------------------------
+# CML command wrapper
+# ----------------------------
+cml() {
+    local cmd="$1"
+    shift
+    case "$cmd" in
+        tht)  # Full TrueColor theme preview
+            if [ -f "$CML_DIR/cml-truecolor-preview.sh" ]; then
+                "$CML_DIR/cml-truecolor-preview.sh" "$@"
+            else
+                echo "❌ TRUECOLOR PREVIEW SCRIPT NOT FOUND"
+            fi
+            ;;
+        theme)  # Theme selector
+            if [ -f "$CML_DIR/cml-theme.sh" ]; then
+                bash "$CML_DIR/cml-theme.sh"
+            else
+                echo "⚠ THEME SELECTOR NOT FOUND. DEFAULTING TO CURRENT THEME."
+                cml_read_theme
+                echo "CURRENT THEME: $CURRENT_THEME"
+            fi
+            ;;
+        "")  # No subcommand → show default menu
+            if [ -f "$CML_DIR/cml-shortcuts.sh" ]; then
+                "$CML_DIR/cml-shortcuts.sh"
+            else
+                echo "❌ CML SHORTCUTS SCRIPT NOT FOUND"
+            fi
+            ;;
+        *)  # Other subcommands → forward to shortcuts
+            if [ -f "$CML_DIR/cml-shortcuts.sh" ]; then
+                "$CML_DIR/cml-shortcuts.sh" "$cmd" "$@"
+            else
+                echo "❌ CML SHORTCUTS SCRIPT NOT FOUND"
+            fi
+            ;;
+    esac
+}
+
+# ----------------------------
+# Optional: display TrueColor support at shell start
+# ----------------------------
+if command -v cml_truecolor_supported >/dev/null 2>&1 && cml_truecolor_supported; then
+    printf '%b\n' "$(rgb_fg 0 255 255)✔ TRUECOLOR SUPPORTED$(cml_reset)"
+else
+    printf '%b\n' "⚠ TRUECOLOR NOT SUPPORTED, FALLBACK ACTIVE"
+fi
+
+# ----------------------------
+# Initialization complete
+# ----------------------------
+cml_read_theme

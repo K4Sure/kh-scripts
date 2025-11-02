@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# cml-truecolor-test.sh — Truecolor engine self-test
+
+# 1. Source the engine script from the same directory
+DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+source "$DIR/cml-truecolor.sh"
+
+# 2. Initialize theme engine (if needed)
+cml_refresh_theme
+
+# 3. Banners with color gradients
+VERSION="1.0.0"  # Engine version number (could be read from the engine)
+banner1="✔ COLOR MASTER TRUECOLOR ENGINE LOADED (v$VERSION)"
+banner2="=== TRUECOLOR ENGINE SELF-TEST ==="
+banner3="ENGINE VERSION: v$VERSION"
+
+# Function to print a string in a gradient between two RGB colors
+print_gradient() {
+  local text="$1"; local r1=$2; local g1=$3; local b1=$4
+  local r2=$5; local g2=$6; local b2=$7
+  local len=${#text}
+  for ((i=0; i<len; i++)); do
+    # Interpolation factor
+    t=$(awk -v i="$i" -v len="$len" 'BEGIN{printf "%f", i/(len-1)}')
+    # Compute each channel by linear interpolation9
+    r=$(awk -v a="$r1" -v b="$r2" -v f="$t" 'BEGIN{printf "%d", a+f*(b-a)}')
+    g=$(awk -v a="$g1" -v b="$g2" -v f="$t" 'BEGIN{printf "%d", a+f*(b-a)}')
+    b=$(awk -v a="$b1" -v b2="$b2" -v f="$t" 'BEGIN{printf "%d", a+f*(b-a)}')
+    printf "\x1b[38;2;%d;%d;%dm%s" "$r" "$g" "$b" "${text:i:1}"
+  done
+  printf "\x1b[0m\n"
+}
+
+# Print banners in different gradients
+print_gradient "$banner1"  15 100 200  50 150 255
+print_gradient "$banner2" 200 100 100 255 150 100
+print_gradient "$banner3"  50 200  50 100 255 100
+
+# 4. Current theme name in main color
+echo -e "${THEME_MAIN}CURRENT ACTIVE THEME: $CML_THEME\x1b[0m"
+
+# 5. Loop through all themes dynamically
+for theme_file in "$DIR/themes/"*; do
+  theme="$(basename "$theme_file")"
+  cml_refresh_theme "$theme"
+  # Header in accent color
+  echo -e "${THEME_ACCENT}— TESTING THEME: $theme —\x1b[0m"
+  # Gradient "progress bar" using theme colors (example using main/accent as endpoints)
+  bar="[$theme]"
+  len=${#bar}
+  for ((i=0; i<len; i++)); do
+    t=$(awk -v i="$i" -v len="$len" 'BEGIN{printf "%f", i/(len-1)}')
+    # Assume THEME_MAIN and THEME_ACCENT hold RGB triplets or define variables (MAIN_R, MAIN_G, etc).
+    # Here we just reuse placeholder values MAIN_R,MAIN_G,MAIN_B and ACC_R,ACC_G,ACC_B:
+    r=$(awk -v a="$MAIN_R" -v b="$ACC_R" -v f="$t" 'BEGIN{printf "%d", a+f*(b-a)}')
+    g=$(awk -v a="$MAIN_G" -v b="$ACC_G" -v f="$t" 'BEGIN{printf "%d", a+f*(b-a)}')
+    b=$(awk -v a="$MAIN_B" -v b="$ACC_B" -v f="$t" 'BEGIN{printf "%d", a+f*(b-a)}')
+    printf "\x1b[38;2;%d;%d;%dm%s" "$r" "$g" "$b" "${bar:i:1}"
+  done
+  printf "\x1b[0m\n"
+  # Pangram in main color
+  echo -e "${THEME_MAIN}THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG\x1b[0m"
+done
+
+# 6. Completion message in main color
+echo -e "${THEME_MAIN}✔ Truecolor self-test completed successfully (theme: $CML_THEME).\x1b[0m"

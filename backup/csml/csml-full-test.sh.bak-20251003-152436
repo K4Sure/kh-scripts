@@ -1,0 +1,23 @@
+#!/bin/bash
+# CSML Combined Test Suite
+# v1.0.0-prelaunch
+
+LOGFILE="$HOME/kh-scripts/logs/csml-test.log"
+
+echo "=== CSML v1.0.0-prelaunch Combined Test Suite ==="
+echo "Started at: $(date)" | tee "$LOGFILE"
+echo >> "$LOGFILE"
+
+echo "[1] Version" | tee -a "$LOGFILE"
+bash -c "source ~/kh-scripts/library/symbols/symbols.sh && csml_version" | tee -a "$LOGFILE"
+echo >> "$LOGFILE"
+
+echo "[2] Demo Output" | tee -a "$LOGFILE"
+bash ~/kh-scripts/library/symbols/symbols-demo.sh | tee -a "$LOGFILE"
+echo >> "$LOGFILE"
+
+echo "[3] UTF-8 Repeat Test" | tee -a "$LOGFILE"
+for s in arrow_up star_full block_full check heart music; do
+  out=$(bash -c "source ~/kh-scripts/library/symbols/symbols.sh && csml_symbol $s")
+  printf "%s: %s %s %s %s\n" "$s" "$out" "$out" "$out" "$out" | tee -a "$LOGFILE"
+done

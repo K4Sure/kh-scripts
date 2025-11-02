@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# ==============================================
+# File: ~/kh-scripts/library/colors/cml-truecolor-test.sh
+# Purpose: Visual self-test for cml-truecolor.sh
+# Version: v1.5.4
+# ==============================================
+
+# --- Path & Load ---
+CML_COLOR_DIR="$HOME/kh-scripts/library/colors"
+ENGINE_FILE="$CML_COLOR_DIR/cml-truecolor.sh"
+
+if [ ! -f "$ENGINE_FILE" ]; then
+  echo "❌ TRUECOLOR ENGINE NOT FOUND: $ENGINE_FILE"
+  exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$ENGINE_FILE"
+
+# --- HEADER: ENGINE LOADED ---
+printf "%s\n" "$(cml_render_gradient_bar "✔ COLOR MASTER TRUECOLOR ENGINE LOADED (v${CML_TRUECOLOR_VERSION})" 70)"
+echo
+
+# --- HEADER: SELF TEST ---
+printf "%s\n" "$(cml_render_gradient_bar "=== TRUECOLOR ENGINE SELF-TEST ===" 70)"
+echo
+
+# --- ENGINE VERSION (with gradient title style) ---
+printf "%s\n" "$(cml_render_gradient_bar "ENGINE VERSION: v${CML_TRUECOLOR_VERSION}" 70)"
+echo
+
+# --- CURRENT ACTIVE THEME ---
+THEME_FILE="$CML_COLOR_DIR/.cml_theme"
+if [ -f "$THEME_FILE" ]; then
+  CURRENT_THEME=$(< "$THEME_FILE")
+  CURRENT_THEME="${CURRENT_THEME//[$'\r\n']/}"
+  CURRENT_THEME="${CURRENT_THEME^^}"
+else
+  CURRENT_THEME="CLASSIC"
+fi
+
+cml_load_palette "$CURRENT_THEME"
+printf "\n%s\n" "$(cml_colorize "$C_TITLE" "CURRENT ACTIVE THEME: $CURRENT_THEME")"
+echo
+
+# --- THEME TESTS ---
+THEMES=("CLASSIC" "FOREST" "DESERT" "OCEAN" "SUMMER" "WINTER" "WILD" "NEON:RED" "NEON:ORANGE" "NEON:YELLOW" "NEON:GREEN" "NEON:BLUE" "NEON:PURPLE")
+
+for theme in "${THEMES[@]}"; do
+  cml_load_palette "$theme"
+  printf "\n%s\n" "$(cml_colorize "$C_TITLE" "── TESTING THEME: $theme ──")"
+  cml_render_gradient_bar "" 60
+done
+
+# --- FINAL MESSAGE ---
+echo
+printf "%s\n" "$(cml_colorize "$C_SUCCESS" "✔ ALL TESTS PASSED IF COLORS AND GRADIENTS DISPLAY CORRECTLY.")"
+echo

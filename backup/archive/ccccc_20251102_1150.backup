@@ -1,0 +1,212 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# File Organizer for Termux with Separate Sequencing
+# - Creates Photos/Videos folders only when needed
+# - Single files go into Mix Photos / Mix Videos
+
+if [[ -z "$1" ]]; then
+  echo "Usage: ccccc <directory>"
+  exit 1
+fi
+
+ROOT_DIR="$1"
+
+if [[ ! -d "$ROOT_DIR" ]]; then
+  echo "Error: Directory does not exist."
+  exit 1
+fi
+
+# Supported extensions
+video_exts=("mp4" "mkv" "avi" "mov" "flv" "wmv" "webm" "m4v" "3gp")
+image_exts=("jpg" "jpeg" "png" "gif" "bmp" "tiff" "webp" "heic" "heif")
+
+# Get prefix before last underscore
+get_prefix() {
+  local filename=$(basename -- "$1")
+  local base="${filename%.*}"
+  echo "${base%_*}"
+}
+
+# Case-insensitive extension check
+has_extension() {
+  local file="$1"
+  local ext="${file##*.}"
+  ext=$(tr '[:upper:]' '[:lower:]' <<< "$ext")
+
+  for v in "${video_exts[@]}"; do [[ "$v" == "$ext" ]] && echo "video" && return; done
+  for i in "${image_exts[@]}"; do [[ "$i" == "$ext" ]] && echo "image" && return; done
+  echo "unknown"
+}
+
+# Find files with safe handling
+files=()
+while IFS= read -r -d $'\0'; do
+  files+=("$REPLY")
+done < <(find "$ROOT_DIR" -maxdepth 1 -type f ! -name ".foldericon.png" -print0)
+
+# Filter for supported extensions
+supported_files=()
+for file in "${files[@]}"; do
+  ext_type=$(has_extension "$file")
+  [[ "$ext_type" != "unknown" ]] && supported_files+=("$file")
+done
+
+total=${#supported_files[@]}
+if [[ $total -eq 0 ]]; then
+  echo "No supported files found in: $ROOT_DIR"
+  echo "Supported video formats: ${video_exts[*]}"
+  echo "Supported image formats: ${image_exts[*]}"
+  exit 0
+fi
+
+# Group files by prefix
+declare -A groups
+for f in "${supported_files[@]}"; do
+  prefix=$(get_prefix "$f")
+  [[ -n "$prefix" ]] && groups["$prefix"]+="$f"$'\n'
+done
+
+# Counters
+processed=0
+videos_count=0
+photos_count=0
+renamed_count=0
+error_count=0
+errors=()
+
+# Start processing
+echo "Processing $total files..."
+echo "Press Ctrl+C to cancel"
+echo ""
+
+# Ensure Mix folders exist only if needed
+mix_photos_dir="${ROOT_DIR}/Mix Photos"
+mix_videos_dir="${ROOT_DIR}/Mix Videos"
+
+# Process groups
+for prefix in "${!groups[@]}"; do
+  # Separate files by type within the group
+  image_files=()
+  video_files=()
+
+  group_files=()
+  while IFS= read -r -d $'\n' line; do
+    [[ -n "$line" ]] && group_files+=("$line")
+  done <<< "${groups[$prefix]}"
+
+  for file_path in "${group_files[@]}"; do
+    ext_type=$(has_extension "$file_path")
+    case $ext_type in
+      video) video_files+=("$file_path") ;;
+      image) image_files+=("$file_path") ;;
+    esac
+  done
+
+  # Process images
+  if [[ ${#image_files[@]} -gt 0 ]]; then
+    if [[ ${#image_files[@]} -eq 1 ]]; then
+      # Single image -> Mix Photos
+      mkdir -p "$mix_photos_dir"
+      seq_num=1
+      file_path="${image_files[0]}"
+      new_name=$(printf "%s_%03d.%s" "$prefix" "$seq_num" "${file_path##*.}")
+      dest="$mix_photos_dir/$new_name"
+
+      if mv -n -- "$file_path" "$dest" 2>/dev/null; then
+        ((renamed_count++))
+        ((photos_count++))
+      else
+        errors+=("Error moving: $(basename -- "$file_path")")
+        ((error_count++))
+      fi
+      ((processed++))
+    else
+      # Multiple images -> prefix Photos
+      photos_folder="${ROOT_DIR}/${prefix} Photos"
+      mkdir -p "$photos_folder"
+      seq_num=1
+      for file_path in "${image_files[@]}"; do
+        new_name=$(printf "%s_%03d.%s" "$prefix" "$seq_num" "${file_path##*.}")
+        dest="$photos_folder/$new_name"
+
+        if mv -n -- "$file_path" "$dest" 2>/dev/null; then
+          ((renamed_count++))
+          ((photos_count++))
+        else
+          errors+=("Error moving: $(basename -- "$file_path")")
+          ((error_count++))
+        fi
+        ((processed++))
+        ((seq_num++))
+      done
+    fi
+  fi
+
+  # Process videos
+  if [[ ${#video_files[@]} -gt 0 ]]; then
+    if [[ ${#video_files[@]} -eq 1 ]]; then
+      # Single video -> Mix Videos
+      mkdir -p "$mix_videos_dir"
+      seq_num=1
+      file_path="${video_files[0]}"
+      new_name=$(printf "%s_%03d.%s" "$prefix" "$seq_num" "${file_path##*.}")
+      dest="$mix_videos_dir/$new_name"
+
+      if mv -n -- "$file_path" "$dest" 2>/dev/null; then
+        ((renamed_count++))
+        ((videos_count++))
+      else
+        errors+=("Error moving: $(basename -- "$file_path")")
+        ((error_count++))
+      fi
+      ((processed++))
+    else
+      # Multiple videos -> prefix Videos
+      videos_folder="${ROOT_DIR}/${prefix} Videos"
+      mkdir -p "$videos_folder"
+      seq_num=1
+      for file_path in "${video_files[@]}"; do
+        new_name=$(printf "%s_%03d.%s" "$prefix" "$seq_num" "${file_path##*.}")
+        dest="$videos_folder/$new_name"
+
+        if mv -n -- "$file_path" "$dest" 2>/dev/null; then
+          ((renamed_count++))
+          ((videos_count++))
+        else
+          errors+=("Error moving: $(basename -- "$file_path")")
+          ((error_count++))
+        fi
+        ((processed++))
+        ((seq_num++))
+      done
+    fi
+  fi
+
+  # Show progress
+  percent=$((processed * 100 / total))
+  printf "\rProcessed: %d/%d (%d%%)" "$processed" "$total" "$percent"
+done
+
+# Clear progress line
+printf "\r\033[K"
+
+# Print any errors
+if [[ ${#errors[@]} -gt 0 ]]; then
+  echo ""
+  echo "Errors encountered during processing:"
+  for err in "${errors[@]}"; do
+    echo " - $err"
+  done
+fi
+
+# Final report
+echo ""
+echo "Processing complete!"
+echo "Total files processed: $total"
+echo "Videos organized: $videos_count"
+echo "Photos organized: $photos_count"
+echo "Files renamed: $renamed_count"
+[[ $error_count -gt 0 ]] &&
+  echo "Errors encountered: $error_count"
+
+exit 0

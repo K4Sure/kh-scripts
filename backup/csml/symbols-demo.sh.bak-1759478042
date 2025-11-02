@@ -1,0 +1,27 @@
+#!/bin/bash
+# CSML Demo v1.0.0-stable
+
+echo "== Characters & Symbols Master Library Demo =="
+echo "CSML v1.0.0-stable"
+echo
+
+echo "[1] Box Drawing"
+echo " ┌──┐"
+echo " │  │"
+echo " └──┘"
+echo
+
+echo "[2] Arrows"
+echo " Up:    ↑"
+echo " Down:  ↓"
+echo " Left:  ←"
+echo " Right: →"
+echo " Both:  ↔, ↕"
+echo
+
+echo "[3] Stars"
+echo " ★ ☆ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯"
+echo
+
+echo "[4] Blocks"
+echo " ░▒▓ █ ▓▒░"

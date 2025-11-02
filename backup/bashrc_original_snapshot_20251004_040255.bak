@@ -1,0 +1,114 @@
+# ~/.bashrc - Minimal Professional Configuration with Stable Neon Prompt and CML
+
+# =====================
+# PREVENT DOUBLE SOURCING
+# =====================
+if [ -n "$BASHRC_LOADED" ]; then
+    return
+fi
+export BASHRC_LOADED=1
+
+# =====================
+# ENVIRONMENT VARIABLES
+# =====================
+export PATH="$HOME/kh-scripts:$PATH"
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoreboth:erasedups
+export EDITOR='nano'
+export VISUAL='nano'
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# KH Scripts Library Paths
+export KH_SCRIPTS_DIR="$HOME/kh-scripts"
+export KH_LIBRARY_DIR="$HOME/kh-scripts/library/colors"
+
+# =====================
+# PERMANENT CUSTOM PROMPT
+# =====================
+PS1="\[\e[1;38;2;255;255;0m\]\$( [ \"\$PWD\" = \"\$HOME\" ] && echo \"~\" || basename \"\$PWD\" )\[\e[0m\] \[\e[1;38;2;0;255;0m\]\$ \[\e[0m\]"
+
+# =====================
+# ESSENTIAL ALIASES
+# =====================
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias ~='cd ~'
+alias l='eza -a --group-directories-first --grid'
+alias la='eza -a --group-directories-first --long'
+alias c='clear'
+alias h='history'
+alias pkgup='tupdate'
+alias storage="cd /storage/emulated/0"
+alias nn='nano -c'
+alias xx='chmod +x'
+alias tss='termux-setup-storage'
+alias ebash="nano -c ~/.bashrc"
+alias rebash='unset BASHRC_LOADED && source ~/.bashrc && clear && echo -e "\e[38;2;0;255;0m✅ Bashrc Reloaded and Screen Cleared.\e[0m"'
+alias etmux="nano -c ~/.termux/termux.properties"
+alias trs='termux-reload-settings'
+alias ccc="$HOME/kh-scripts/ccccc"
+alias org="$HOME/kh-scripts/file_organizer.sh"
+alias pdld="$HOME/kh-scripts/library/parallel/parallel-download.sh"
+
+# =====================
+# ESSENTIAL FUNCTIONS
+# =====================
+mcd() { mkdir -p "$1" && cd "$1"; }
+
+battery() { termux-battery-status 2>/dev/null | grep -o '"percentage":[^,]*' | cut -d: -f2 || echo "N/A"; }
+
+backup() { cp "$1" "$1.bak"; echo "Backup created: $1.bak"; }
+
+help() {
+    echo -e "\033[1;36mEssential Commands:\033[0m"
+    echo "mcd <dir>    - Create and enter directory"
+    echo "battery      - Check battery level"
+    echo "pkgup        - Update packages"
+    echo "storage      - Go to internal storage"
+    echo "help         - Show this help"
+}
+
+# =====================
+# HISTORY ENHANCEMENTS
+# =====================
+shopt -s histappend
+shopt -s cmdhist
+PROMPT_COMMAND='history -a'
+
+# =====================
+# SILENT STARTUP FLAG
+# =====================
+if [ -z "$WELCOME_SHOWN" ]; then
+    export WELCOME_SHOWN=1
+fi
+
+# =====================
+# AUTO-UPDATE REMINDER
+# =====================
+LAST_UPDATE_FILE="$HOME/.last_update"
+TODAY=$(date +%F)
+if [ -f "$LAST_UPDATE_FILE" ]; then
+    LAST_UPDATE=$(cat "$LAST_UPDATE_FILE")
+    if [ "$LAST_UPDATE" != "$TODAY" ]; then
+        echo -e "\033[1;33m💡 Run 'pkgup' to update packages (last update: $LAST_UPDATE)\033[0m"
+    fi
+fi
+
+# ==========================================
+# COLOR MASTER LIBRARY (CML) + GLOBAL THEME
+# ==========================================
+# Load Global Scripts Theme (applies to all libraries, except Termux Terminal)
+if [ -f "$HOME/kh-scripts/library/colors/global-scripts-theme.sh" ]; then
+    source "$HOME/kh-scripts/library/colors/global-scripts-theme.sh"
+fi
+
+# Load CML Shortcuts
+alias cml="$HOME/kh-scripts/library/colors/cml-shortcuts.sh"
+
+# Load CML Core
+if [ -f "$HOME/kh-scripts/library/colors/cml.sh" ]; then
+    source "$HOME/kh-scripts/library/colors/cml.sh"
+fi
