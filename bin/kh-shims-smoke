@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+echo "smoke: csml"; csml-set csml::set smoke-test
+echo "smoke: dbml"; dbml-connect dbml::connect smoke-test
+echo "smoke: pml"; pml-echo pml::echo smoke-test
+echo "smoke: bmc"; bmc-version bmc::version
+echo "OK: all shims responded"
