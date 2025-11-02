@@ -1,0 +1,24 @@
+# temp and caches
+/tmp/
+/tmp*
+*.log
+install-*.txt
+install-shim-dryrun-*.txt
+
+# local device config and transient files
+.termux_colors.sh
+*.sqlite
+*.db
+*.cache
+.*.swp
+
+# editor / OS / compiled
+.DS_Store
+*~ 
+*.swp
+__pycache__/
+*.pyc
+*.env
+
+# backup archives you don't want in git
+backup/

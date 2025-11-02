@@ -1,3 +1,0 @@
-#!/bin/bash
-source "$HOME/kh-scripts/library/symbols/symbols.sh"
-csml_loaded
