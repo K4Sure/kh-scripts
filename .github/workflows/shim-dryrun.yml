@@ -1,0 +1,19 @@
+name: Shim Dry-Run Check
+on: [push, pull_request]
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make scripts executable
+        run: chmod +x ./library/termux-ecosystem/tools/install-shim-dryrun.sh
+      - name: Run dry-run for libs
+        run: |
+          set -euo pipefail
+          for lib in csml dbml pml bmc; do
+            ./library/termux-ecosystem/tools/install-shim-dryrun.sh refresh "$lib" | tee -a install-shim-dryrun-ci.txt || true
+          done
+          if grep -q '^DRY-WRITE:' install-shim-dryrun-ci.txt; then
+            sed -n '1,240p' install-shim-dryrun-ci.txt
+            exit 1
+          fi
