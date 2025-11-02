@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+HOME_DIR="${HOME:-/data/data/com.termux/files/home}"
+BMC_BOOTSTRAP='/data/data/com.termux/files/home/bmc/bootstrap.sh'
+LIB_NAME='dbml'
+ENTRY_NAME='dbml::connect'
+exec "$BMC_BOOTSTRAP" "$LIB_NAME" "$ENTRY_NAME" "$@"

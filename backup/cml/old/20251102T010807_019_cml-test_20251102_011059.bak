@@ -1,0 +1,395 @@
+#!/usr/bin/env bash
+# cml-test.sh — CML general integrity test
+# Title & footer gradients are independent of ACTIVE THEME
+CML_DIR="${HOME:-$HOME}/kh-scripts/library/colors"
+ENGINE_FILE="$CML_DIR/cml-truecolor.sh"
+THEME_FILE="$CML_DIR/.cml_theme"
+CML_VERSION="v1.2.1-indep-grad"
+
+# === CONFIG: independent gradients ===
+# Title gradient (editable). If empty, falls back to engine/palette/deterministic.
+TITLE_GRAD_START="#9A4DFF"    # magenta
+TITLE_GRAD_END="#00A7FF"      # cyan
+
+# Footer gradient (editable independent of theme)
+FOOTER_GRAD_START="#00A7FF"   # cyan
+FOOTER_GRAD_END="#00FF9A"     # greenish
+
+: "${C_RESET:=$'\033[0m'}"
+
+# -------------------------
+# Helpers
+# -------------------------
+_use_truecolor() {
+  if declare -F cml_truecolor_supported >/dev/null 2>&1 && cml_truecolor_supported; then
+    return 0
+  fi
+  [[ "${COLORTERM:-}" == *truecolor* ]] || [[ "${TERM:-}" == *-truecolor* ]]
+}
+
+rgb_fg_print() {
+  local r="$1" g="$2" b="$3" txt="$4"
+  if declare -F rgb_fg >/dev/null 2>&1; then
+    printf "%b\n" "$(rgb_fg "$r" "$g" "$b")${txt}${C_RESET}"
+  else
+    printf "%b\n" "\033[38;2;${r};${g};${b}m${txt}${C_RESET}"
+  fi
+}
+
+rgb_bg_block() {
+  local r="$1" g="$2" b="$3"
+  if declare -F rgb_bg >/dev/null 2>&1; then
+    printf "%b" "$(rgb_bg "$r" "$g" "$b")  ${C_RESET}"
+  else
+    printf "  "
+  fi
+}
+
+_repeat_char() {
+  local n="$1" ch="$2" i out=""
+  for ((i=0;i<n;i++)); do out+="$ch"; done
+  printf "%s" "$out"
+}
+
+# interpolated gradient text (character-by-character)
+gradient_text() {
+  # args: sr sg sb er eg eb text...
+  local sr=$1 sg=$2 sb=$3 er=$4 eg=$5 eb=$6; shift 6
+  local text="$*"
+  local n=${#text}
+  [ "$n" -le 0 ] && return 0
+  if [ "$n" -le 1 ]; then
+    rgb_fg_print "$sr" "$sg" "$sb" "$text"
+    return 0
+  fi
+  local i r g b ch
+  for ((i=0;i<n;i++)); do
+    ch="${text:i:1}"
+    r=$(( sr + ((er - sr) * i) / (n - 1) ))
+    g=$(( sg + ((eg - sg) * i) / (n - 1) ))
+    b=$(( sb + ((eb - sb) * i) / (n - 1) ))
+    if declare -F rgb_fg >/dev/null 2>&1; then
+      printf "%b" "$(rgb_fg "$r" "$g" "$b")${ch}${C_RESET}"
+    else
+      printf "%b" "\033[38;2;${r};${g};${b}m${ch}${C_RESET}"
+    fi
+  done
+  printf "\n"
+}
+
+hex_to_rgb_safe() {
+  local hex="${1##\#}"
+  if declare -F hex_to_rgb >/dev/null 2>&1; then
+    hex_to_rgb "#$hex" 2>/dev/null || return 1
+    return 0
+  fi
+  [ "${#hex}" -eq 6 ] || return 1
+  printf '%d %d %d' $((16#${hex:0:2})) $((16#${hex:2:2})) $((16#${hex:4:2}))
+}
+
+# -------------------------
+# Load engine (if present)
+# -------------------------
+if [ -f "$ENGINE_FILE" ]; then
+  # shellcheck disable=SC1090
+  source "$ENGINE_FILE" >/dev/null 2>&1 || true
+fi
+
+# -------------------------
+# Layout calc
+# -------------------------
+cols=$(tput cols 2>/dev/null || printf '%s' "${COLUMNS:-80}")
+[ -z "$cols" ] && cols=80
+[ "$cols" -lt 40 ] && cols=80
+border_w=$(( cols * 75 / 100 ))
+[ "$border_w" -lt 40 ] && border_w=40
+[ "$border_w" -gt "$cols" ] && border_w=$cols
+
+# -------------------------
+# print_main_title: prefers TITLE_GRAD_* (independent), else engine/palette/deterministic
+# -------------------------
+print_main_title() {
+  local title="COLOR MASTER LIBRARY (CML) GENERAL TEST"
+  # 1) explicit independent TITLE_GRAD if set and valid hex
+  if [ -n "${TITLE_GRAD_START:-}" ] && [ -n "${TITLE_GRAD_END:-}" ]; then
+    local s="${TITLE_GRAD_START##\#}" e="${TITLE_GRAD_END##\#}"
+    if [ "${#s}" -eq 6 ] && [ "${#e}" -eq 6 ]; then
+      read -r sr sg sb <<< "$(hex_to_rgb_safe "#${s}" 2>/dev/null || echo "154 77 255")"
+      read -r er eg eb <<< "$(hex_to_rgb_safe "#${e}" 2>/dev/null || echo "0 167 255")"
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$(_repeat_char "$border_w" "═")"
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$title"
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$(_repeat_char "$border_w" "═")"
+      return 0
+    fi
+  fi
+
+  # 2) engine gradient API (if present)
+  if declare -F cml_apply_theme_gradient >/dev/null 2>&1; then
+    if cml_apply_theme_gradient "$(_repeat_char "$border_w" "═")"; then :; else rgb_fg_print 200 200 255 "$(_repeat_char "$border_w" "═")"; fi
+    if cml_apply_theme_gradient "$title";                      then :; else rgb_fg_print 200 200 255 "$title"; fi
+    if cml_apply_theme_gradient "$(_repeat_char "$border_w" "═")"; then :; else rgb_fg_print 200 200 255 "$(_repeat_char "$border_w" "═")"; fi
+    return 0
+  fi
+
+  # 3) palette endpoints (CML_GRAD_START/CML_GRAD_END) if loaded
+  if [ -n "${CML_GRAD_START:-}" ] && [ -n "${CML_GRAD_END:-}" ]; then
+    local s="${CML_GRAD_START##\#}" e="${CML_GRAD_END##\#}"
+    if [ "${#s}" -eq 6 ] && [ "${#e}" -eq 6 ]; then
+      read -r sr sg sb <<< "$(hex_to_rgb_safe "#${s}" 2>/dev/null || echo "200 200 255")"
+      read -r er eg eb <<< "$(hex_to_rgb_safe "#${e}" 2>/dev/null || echo "120 120 120")"
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$(_repeat_char "$border_w" "═")"
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$title"
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$(_repeat_char "$border_w" "═")"
+      return 0
+    fi
+  fi
+
+  # 4) fallback - single color header
+  rgb_fg_print 200 200 255 "$(_repeat_char "$border_w" "═")"
+  rgb_fg_print 200 200 255 "$title"
+  rgb_fg_print 200 200 255 "$(_repeat_char "$border_w" "═")"
+}
+
+# print header (no extra blank lines around title)
+echo
+print_main_title
+rgb_fg_print 200 200 255 "CML VERSION: ${CML_VERSION}"
+rgb_fg_print 150 200 255 "TRUECOLOR ENGINE: ${CML_TRUECOLOR_VERSION:-${CML_TRUECOLOR:-UNKNOWN}}"
+rgb_fg_print 0 255 180   "TEST STARTED: $(date)"
+printf "\n"
+
+# -------------------------
+# [1] engine checks
+# -------------------------
+printf "%s\n" "[1] ENGINE INTEGRITY TEST"
+for fn in rgb_fg rgb_bg hex_to_rgb cml_load_palette cml_truecolor_supported cml_colorize cml_apply_theme_gradient; do
+  if declare -F "$fn" >/dev/null 2>&1; then
+    rgb_fg_print 0 200 255 "✔ $fn() available"
+  else
+    rgb_fg_print 255 120 120 "✖ $fn() missing"
+  fi
+done
+if _use_truecolor; then
+  rgb_fg_print 0 255 180 "✔ Terminal indicates truecolor support"
+else
+  rgb_fg_print 255 165 0 "⚠ Truecolor not detected; using fallbacks"
+fi
+printf "\n"
+
+# -------------------------
+# read theme & load palette
+# -------------------------
+CURRENT_THEME=$(awk 'NF{print; exit}' "$THEME_FILE" 2>/dev/null || printf 'CLASSIC')
+CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | sed 's/[\r\n]//g')
+CURRENT_THEME="${CURRENT_THEME^^}"
+[ -z "$CURRENT_THEME" ] && CURRENT_THEME="CLASSIC"
+
+PALETTE_OK=false
+if declare -F cml_load_palette >/dev/null 2>&1; then
+  if cml_load_palette "$CURRENT_THEME" >/dev/null 2>&1; then
+    if [ -f "$THEME_FILE" ]; then
+      CURRENT_THEME=$(awk "NF{print; exit}" "$THEME_FILE" 2>/dev/null || printf "CLASSIC")
+      CURRENT_THEME="${CURRENT_THEME//[$'
+']/}"
+      CURRENT_THEME="${CURRENT_THEME^^}"
+    else
+      CURRENT_THEME="CLASSIC"
+      printf "%s" "$CURRENT_THEME" > "$THEME_FILE"
+    fi
+    theme_accent_print "✔ ACTIVE THEME: ${CURRENT_THEME}"
+    if declare -F cml_title >/dev/null 2>&1; then
+      cml_title "✔ ACTIVE THEME: ${CURRENT_THEME}"
+      printf "
+"
+    fi
+
+  else
+    CURRENT_THEME="CLASSIC"
+    printf "%s" "$CURRENT_THEME" > "$THEME_FILE"
+  fi
+  # print with theme accent so color follows the active theme
+  theme_accent_print "✔ ACTIVE THEME: ${CURRENT_THEME}"
+  # If cml_title exists, use the same gradient/format as section [4]
+  if declare -F cml_title >/dev/null 2>&1; then
+    cml_title "✔ ACTIVE THEME: ${CURRENT_THEME}"
+    printf "\n"
+    return 0
+  fi
+  # prefer palette single-color via cml_colorize
+  if [ "$PALETTE_OK" = true ] && declare -F cml_colorize >/dev/null 2>&1; then
+    if [ -n "${C_ACCENT:-}" ]; then cml_colorize "$txt" "${C_ACCENT}"; printf "\n"; return 0; fi
+    if [ -n "${C_TITLE:-}"  ]; then cml_colorize "$txt" "${C_TITLE}";  printf "\n"; return 0; fi
+    if [ -n "${C_GOOD:-}"   ]; then cml_colorize "$txt" "${C_GOOD}";   printf "\n"; return 0; fi
+  fi
+  # deterministic fallback
+  case "${CURRENT_THEME}" in
+    NEON:RED*)    rgb_fg_print 255 64 64  "$txt" ;;
+    NEON:ORANGE*) rgb_fg_print 255 165 0  "$txt" ;;
+    NEON:YELLOW*) rgb_fg_print 255 210 0  "$txt" ;;
+    NEON:GREEN*)  rgb_fg_print   0 255 120 "$txt" ;;
+    NEON:BLUE*)   rgb_fg_print  30 144 255 "$txt" ;;
+    NEON:PURPLE*) rgb_fg_print 200 100 255 "$txt" ;;
+    FOREST*)      rgb_fg_print  10 120  50 "$txt" ;;
+    WINTER*)      rgb_fg_print  10 100 200 "$txt" ;;
+    OCEAN*)       rgb_fg_print   2 110 160 "$txt" ;;
+    DESERT*)      rgb_fg_print 200 150  80 "$txt" ;;
+    SUMMER*)      rgb_fg_print 255 180   0 "$txt" ;;
+    WILD*)        rgb_fg_print 255 45 147 "$txt" ;;
+    *)            rgb_fg_print 200 255 200 "$txt" ;;
+  esac
+}
+
+printf "%s\n" "[2] THEME FILE VALIDATION"
+print_active_theme
+printf "\n"
+
+# -------------------------
+# [3] demos (kept concise)
+# -------------------------
+printf "%s\n" "[3] RGB / HEX / FALLBACK TESTS"
+printf "GRADIENT DEMO\n"
+for r in 0 64 128 192 255; do rgb_bg_block "$r" 0 128; printf " "; done
+printf "\n"
+for r in 0 64 128 192 255; do printf " %3d " "$r"; done
+printf "\n\n"
+
+HEX="#1E90FF"
+if hex_to_rgb_safe "$HEX" >/dev/null 2>&1; then
+  HEX_RGB="$(hex_to_rgb_safe "$HEX" 2>/dev/null || true)"
+  [ -n "$HEX_RGB" ] && rgb_fg_print 120 160 255 "HEX → RGB (${HEX}): ${HEX_RGB}"
+  if _use_truecolor; then set -- $HEX_RGB; rgb_fg_print "$1" "$2" "$3" "THIS LINE USES THE EXACT HEX COLOR AS FOREGROUND"; fi
+fi
+printf "\n"
+
+printf "%s\n" "[4] COLORIZE & TITLE TEST"
+if declare -F cml_title >/dev/null 2>&1; then
+  cml_title "CML COLORIZED TITLE SAMPLE"
+else
+  rgb_fg_print 255 105 180 "CML COLORIZED TITLE SAMPLE"
+fi
+rgb_fg_print 0 200 255 "INFO LINE"
+rgb_fg_print 0 255 120 "SUCCESS LINE"
+rgb_fg_print 255 60 80  "ERROR LINE"
+rgb_fg_print 200 120 255 "SYMBOL TEST"
+printf "\n"
+
+printf "%s\n" "[5] THEME VISUAL DEMO"
+rgb_fg_print 255 105 180 "Sample TITLE"
+rgb_fg_print 0 200 255   "Sample INFO"
+rgb_fg_print 0 255 120   "Sample GOOD"
+rgb_fg_print 255 165 0    "Sample WARN"
+rgb_fg_print 255 60 80    "Sample BAD"
+rgb_fg_print 200 120 255  "Sample SYMBOL"
+printf "\n"
+
+# -------------------------
+# Footer: print DEMO FINISHED then gradient footer (independent endpoints)
+# -------------------------
+rgb_fg_print 0 255 180 "✔ DEMO FINISHED."
+printf "\n"
+
+# choose footer endpoints (prefer explicit FOOTER_GRAD_*; else palette; else default)
+_footer_start="${FOOTER_GRAD_START:-}"
+_footer_end="${FOOTER_GRAD_END:-}"
+if [ -z "$_footer_start" ] || [ -z "$_footer_end" ]; then
+  if [ -n "${CML_GRAD_START:-}" ] && [ -n "${CML_GRAD_END:-}" ]; then
+    _footer_start="${CML_GRAD_START}"; _footer_end="${CML_GRAD_END}"
+  else
+    _footer_start="#00A7FF"; _footer_end="#00FF9A"
+  fi
+fi
+
+s="${_footer_start##\#}"; e="${_footer_end##\#}"
+if [ "${#s}" -eq 6 ] && [ "${#e}" -eq 6 ]; then
+  read -r sr sg sb <<< "$(hex_to_rgb_safe "#${s}" 2>/dev/null || echo "0 167 255")"
+  read -r er eg eb <<< "$(hex_to_rgb_safe "#${e}" 2>/dev/null || echo "0 255 154")"
+  gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$(_repeat_char "$border_w" "═")"
+  gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "✔ CML GENERAL TEST HARNESS FINISHED."
+  gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "RUN DATE: $(date)"
+  gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$(_repeat_char "$border_w" "═")"
+else
+  rgb_fg_print 180 180 255 "$(_repeat_char "$border_w" "═")"
+  rgb_fg_print 0 255 120 "✔ CML GENERAL TEST HARNESS FINISHED."
+  rgb_fg_print 255 210 100 "RUN DATE: $(date)"
+  rgb_fg_print 180 180 255 "$(_repeat_char "$border_w" "═")"
+fi
+
+printf "\n"
+exit 0
+
+# --- APPENDED: robust print_active_theme() to ensure ACTIVE THEME prints with a gradient ---
+print_active_theme() {
+  local txt="✔ ACTIVE THEME: ${CURRENT_THEME}"
+
+  # 1) engine-provided gradient (preferred)
+  if declare -F cml_apply_theme_gradient >/dev/null 2>&1; then
+    if cml_apply_theme_gradient "$txt" "${CURRENT_THEME}"; then
+      printf "\n"; return 0
+    fi
+  fi
+
+  # helper to emit gradient with numeric endpoints (uses gradient_text if available)
+  _emit_grad() {
+    local sr=$1 sg=$2 sb=$3 er=$4 eg=$5 eb=$6 text="$7"
+    if declare -F gradient_text >/dev/null 2>&1; then
+      gradient_text "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$text"
+    else
+      # fallback: print start color then text plain
+      if declare -F rgb_fg_print >/dev/null 2>&1; then
+        rgb_fg_print "$sr" "$sg" "$sb" "$text"
+      else
+        printf "%s\n" "$text"
+      fi
+    fi
+  }
+    if [ "${#h1}" -eq 6 ] && [ "${#h2}" -eq 6 ]; then
+      read -r sr sg sb <<< "$(hex_to_rgb_safe "#${h1}" 2>/dev/null || echo "")"
+      read -r er eg eb <<< "$(hex_to_rgb_safe "#${h2}" 2>/dev/null || echo "")"
+      if [ -n "${sr:-}" ]; then
+        _emit_grad "$sr" "$sg" "$sb" "$er" "$eg" "$eb" "$txt"
+        return 0
+      fi
+    fi
+  fi
+
+    fi
+  fi
+
+  # 4) Deterministic two-color gradient fallbacks by theme family (covers DESERT etc.)
+  case "${CURRENT_THEME}" in
+    NEON:RED*)    _emit_grad 255 60 60 255 160 160 "$txt" ; return 0 ;;
+    NEON:ORANGE*) _emit_grad 255 120 25 255 200 120 "$txt" ; return 0 ;;
+    NEON:YELLOW*) _emit_grad 255 200 25 255 240 150 "$txt" ; return 0 ;;
+    NEON:GREEN*)  _emit_grad 0 200 100 120 255 160 "$txt" ; return 0 ;;
+    NEON:BLUE*)   _emit_grad 30 130 255 120 200 255 "$txt" ; return 0 ;;
+    NEON:PURPLE*) _emit_grad 170 80 255 230 170 255 "$txt" ; return 0 ;;
+    FOREST*)      _emit_grad 10 90 40 40 160 90 "$txt" ; return 0 ;;
+    WINTER*)      _emit_grad 10 100 200 160 220 255 "$txt" ; return 0 ;;
+    OCEAN*)       _emit_grad 0 90 140 0 170 220 "$txt" ; return 0 ;;
+    DESERT*)      _emit_grad 194 167 123 247 231 196 "$txt" ; return 0 ;;
+    SUMMER*)      _emit_grad 255 180 0 255 230 120 "$txt" ; return 0 ;;
+    WILD*)        _emit_grad 255 45 147 255 180 220 "$txt" ; return 0 ;;
+    *)
+      if declare -F rgb_fg_print >/dev/null 2>&1; then
+        rgb_fg_print 200 255 200 "$txt"
+      else
+        printf "%s\n" "$txt"
+      fi
+      return 0 ;;
+  esac
+}
+}
+    WILD*)        _emit_grad 255  45 147 255 180 220 "$txt" ; return 0 ;;
+  esac
+}
+    *)            # fallback single-color
+      if declare -F rgb_fg_print >/dev/null 2>&1; then
+        rgb_fg_print 200 255 200 "$txt"
+      else
+        printf "%s\n" "$txt"
+      fi
+      return 0
+      ;;
+  esac
+}
+# --- end appended function ---

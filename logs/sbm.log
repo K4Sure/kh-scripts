@@ -1,0 +1,10 @@
+=== sbm start 2025-10-27 20:25:02 ===
+=== sbm start 2025-10-27 20:25:15 ===
+[2025-10-27 20:30:47] sbm started
+/data/data/com.termux/files/home/kh-scripts/library/colors/cml-truecolor.sh: line 276: cml_truecolor_supported: command not found
+/data/data/com.termux/files/home/kh-scripts/library/colors/cml-truecolor.sh: line 276: [: : integer expected
+/data/data/com.termux/files/home/kh-scripts/library/dynamic_box/dbml_loader.sh: line 62: DBML_LOADED: unbound variable
+[2025-11-02 00:17:22] sbm started
+/data/data/com.termux/files/home/kh-scripts/library/colors/cml-truecolor.sh: line 276: cml_truecolor_supported: command not found
+/data/data/com.termux/files/home/kh-scripts/library/colors/cml-truecolor.sh: line 276: [: : integer expected
+/data/data/com.termux/files/home/kh-scripts/library/dynamic_box/dbml_loader.sh: line 62: DBML_LOADED: unbound variable

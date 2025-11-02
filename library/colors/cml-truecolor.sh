@@ -1,0 +1,280 @@
+#!/usr/bin/env bash
+# ==========================================================
+# CML TRUECOLOR ENGINE
+# VERSION: v1.6.3-themeguard
+# PURPOSE: Safer hex/rgb handling + theme-as-hex support
+# ==========================================================
+set -u
+
+CML_TRUECOLOR_VERSION="v1.6.3-themeguard"
+ENGINE_PATH="${HOME:-$HOME}/kh-scripts/library/colors/cml-truecolor.sh"
+BACKUP_DIR="${HOME:-$HOME}/kh-scripts/backup"
+
+# backup current file (if present)
+mkdir -p "$BACKUP_DIR" 2>/dev/null || true
+if [ -f "$ENGINE_PATH" ]; then
+  ts=$(date +"%Y%m%dT%H%M%S" 2>/dev/null || printf "%s" "$(date +%s)")
+  cp -p "$ENGINE_PATH" "$BACKUP_DIR/cml-truecolor.sh.bak.$ts" 2>/dev/null || true
+fi
+
+ESC=$'\e'
+CML_RESET="${CML_RESET:-$ESC[0m}"
+
+# -----------------------
+# Utility validators
+# -----------------------
+_cml_trim() {
+  local s="$1"
+  s="${s//$'\r'/}"
+  s="${s#"${s%%[![:space:]]*}"}"
+  s="${s%"${s##*[![:space:]]}"}"
+  printf "%s" "$s"
+}
+
+_cml_is_hex6() {
+  case "$1" in
+    \#?[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+_cml_is_int() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+# unified reset
+cml_reset() { printf "%b" "$CML_RESET"; }
+
+# -----------------------
+# Safe hex -> rgb
+# -----------------------
+hex_to_rgb() {
+  local hex="${1#\#}"
+  if ! _cml_is_hex6 "$hex"; then
+    printf "0 0 0"
+    return 0
+  fi
+  # safe conversion now that we've validated digits
+  local r=$((16#${hex:0:2}))
+  local g=$((16#${hex:2:2}))
+  local b=$((16#${hex:4:2}))
+  printf "%d %d %d" "$r" "$g" "$b"
+}
+
+# -----------------------
+# Safe rgb -> escape sequences
+# -----------------------
+rgb_fg() {
+  # allow missing args; default to 255 for visibility
+  local r="${1:-255}"; local g="${2:-255}"; local b="${3:-255}"
+  _cml_is_int "$r" || r=255
+  _cml_is_int "$g" || g=255
+  _cml_is_int "$b" || b=255
+  printf "%b" "${ESC}[38;2;${r};${g};${b}m"
+}
+
+rgb_bg() {
+  local r="${1:-0}"; local g="${2:-0}"; local b="${3:-0}"
+  _cml_is_int "$r" || r=0
+  _cml_is_int "$g" || g=0
+  _cml_is_int "$b" || b=0
+  printf "%b" "${ESC}[48;2;${r};${g};${b}m"
+}
+
+# fallback 3-bit color index
+cml_fallback_color() {
+  local idx="${1:-7}"
+  if ! _cml_is_int "$idx"; then idx=7; fi
+  printf "%b" "${ESC}[3$((idx % 8))m"
+}
+
+# -----------------------
+# Theme file read + normalization
+# -----------------------
+THEME_FILE="${HOME:-$HOME}/kh-scripts/library/colors/.cml_theme"
+
+cml_read_theme() {
+  local raw=""
+  if [ -f "$THEME_FILE" ]; then
+    raw=$(<"$THEME_FILE")
+    raw=$(_cml_trim "$raw")
+  fi
+  raw="${raw^^}"   # uppercase for named themes
+  # if blank, default
+  if [ -z "$raw" ]; then
+    raw="CLASSIC"
+    printf "%s" "$raw" > "$THEME_FILE"
+    sync
+  fi
+  CURRENT_THEME_RAW="$raw"
+  # If the theme file contains a hex color, accept it as a single-color theme
+  if _cml_is_hex6 "$raw"; then
+    THEME_IS_HEX=1
+    THEME_HEX="${raw}"
+    # normalize to #RRGGBB (uppercase)
+    case "$raw" in
+      \#*) THEME_HEX="#${raw#\#}" ;;
+      *) THEME_HEX="#$raw" ;;
+    esac
+    THEME_HEX="#${THEME_HEX#\#}"
+  else
+    THEME_IS_HEX=0
+    THEME_HEX=""
+  fi
+}
+
+# -----------------------
+# Palette loader (supports named themes and single hex themes)
+# - When THEME_IS_HEX==1, build a minimal palette around that color
+# -----------------------
+cml_load_palette() {
+  local theme_name="${1:-${CURRENT_THEME_RAW:-CLASSIC}}"
+  # ensure we have current theme variable set
+  cml_read_theme >/dev/null 2>&1 || true
+
+  # If file contained a hex, use derived palette
+  if [ "${THEME_IS_HEX:-0}" -eq 1 ]; then
+    # use theme hex as header; generate simple accomp colors by lightening/darkening
+    C_HEADER="${THEME_HEX}"
+    # generate info/accent by simple numeric adjustments (clamped)
+    read -r R G B <<<"$(hex_to_rgb "${C_HEADER#\#}")"
+    clamp() { local v=$1; (( v < 0 )) && v=0; (( v > 255 )) && v=255; printf "%d" "$v"; }
+    lighten() { local v=$1; clamp $(( v + 60 )); }
+    darken()  { local v=$1; clamp $(( v - 60 )); }
+    local r2 g2 b2 r3 g3 b3
+    r2=$(lighten $R); g2=$(lighten $G); b2=$(lighten $B)
+    r3=$(darken $R); g3=$(darken $G); b3=$(darken $B)
+    C_INFO="#$(printf '%02X%02X%02X' "$r2" "$g2" "$b2")"
+    C_ACCENT="#$(printf '%02X%02X%02X' "$r3" "$g3" "$b3")"
+    C_SYMBOL="$C_INFO"
+    C_WARNING="$C_HEADER"
+    C_ERROR="$C_ACCENT"
+    C_SUCCESS="#00FF99"
+    GRAD_START="$C_HEADER"
+    GRAD_END="$C_ACCENT"
+  else
+    # Named themes (normalized)
+    case "${theme_name^^}" in
+      "NEON:ORANGE" | "NEON_ORANGE" | "NEONORANGE")
+        C_HEADER="#FF8C00"; C_INFO="#FFD700"; C_SYMBOL="#FFA07A"
+        C_WARNING="#FFA500"; C_ERROR="#FF0033"; C_SUCCESS="#32FF7A"; C_ACCENT="#33CCFF"
+        GRAD_START="#FF8C00"; GRAD_END="#FFD580"
+        ;;
+      "NEON:PURPLE" | "NEON_PURPLE")
+        C_HEADER="#B266FF"; C_INFO="#E0B3FF"; C_SYMBOL="#FFB3E6"
+        C_WARNING="#C27BA0"; C_ERROR="#FF66CC"; C_SUCCESS="#A0FFB3"; C_ACCENT="#66CCFF"
+        GRAD_START="#9A4DFF"; GRAD_END="#E0B3FF"
+        ;;
+      "OCEAN" | "NEON:OCEAN")
+        C_HEADER="#007FFF"; C_INFO="#66CCFF"; C_SYMBOL="#00B3CC"
+        C_WARNING="#66E0FF"; C_ERROR="#0066CC"; C_SUCCESS="#33FFCC"; C_ACCENT="#66FFFF"
+        GRAD_START="#007FFF"; GRAD_END="#66CCFF"
+        ;;
+      "FOREST")
+        C_HEADER="#228B22"; C_INFO="#A8E6A3"; C_SYMBOL="#4CA64C"
+        C_WARNING="#7ACB73"; C_ERROR="#2E8B57"; C_SUCCESS="#9BFFB3"; C_ACCENT="#3CB371"
+        GRAD_START="#228B22"; GRAD_END="#A8E6A3"
+        ;;
+      *)
+        C_HEADER="#FFFFFF"; C_INFO="#C0C0C0"; C_SYMBOL="#A0A0A0"
+        C_WARNING="#FFFF00"; C_ERROR="#FF0000"; C_SUCCESS="#00FF00"; C_ACCENT="#00AFFF"
+        GRAD_START="#AAAAAA"; GRAD_END="#FFFFFF"
+        ;;
+    esac
+  fi
+
+  # export canonical variables so other scripts can read them
+  export C_HEADER C_INFO C_SYMBOL C_WARNING C_ERROR C_SUCCESS C_ACCENT GRAD_START GRAD_END
+  return 0
+}
+
+# -----------------------
+# Interpolation helper
+# -----------------------
+_interp_int() {
+  local a="$1" b="$2" idx="$3" n="$4"
+  if [ "$n" -le 1 ]; then printf "%d" "$a"; return; fi
+  printf "%d" $(( (a*(n-1-idx) + b*idx) / (n-1) ))
+}
+
+# -----------------------
+# Apply theme gradient to text (uses GRAD_START/GRAD_END)
+# -----------------------
+cml_apply_theme_gradient() {
+  local text="$1"
+  cml_load_palette "${CURRENT_THEME_RAW:-CLASSIC}" >/dev/null 2>&1 || true
+  local gs="${GRAD_START:-#AAAAAA}"
+  local ge="${GRAD_END:-#FFFFFF}"
+  read -r sr sg sb <<<"$(hex_to_rgb "${gs#\#}")"
+  read -r er eg eb <<<"$(hex_to_rgb "${ge#\#}")"
+  local len=${#text}
+  [ "$len" -le 0 ] && printf "%s\n" "$text" && return 0
+  local i r g b ch
+  for ((i=0;i<len;i++)); do
+    ch="${text:i:1}"
+    r=$(_interp_int "$sr" "$er" "$i" "$len")
+    g=$(_interp_int "$sg" "$eg" "$i" "$len")
+    b=$(_interp_int "$sb" "$eb" "$i" "$len")
+    printf "%b%s" "$(rgb_fg "$r" "$g" "$b")" "$ch"
+  done
+  cml_reset
+  printf "\n"
+  return 0
+}
+
+# -----------------------
+# Render gradient bar (theme centered)
+# -----------------------
+cml_render_gradient_bar() {
+  local width="${1:-40}"
+  if ! [[ "$width" =~ ^[0-9]+$ ]]; then width=40; fi
+  [ "$width" -lt 4 ] && width=4
+  cml_load_palette "${CURRENT_THEME_RAW:-CLASSIC}" >/dev/null 2>&1 || true
+  local gs="${GRAD_START:-#AAAAAA}"
+  local ge="${GRAD_END:-#FFFFFF}"
+  read -r sr sg sb <<<"$(hex_to_rgb "${gs#\#}")"
+  read -r er eg eb <<<"$(hex_to_rgb "${ge#\#}")"
+  local i r g b
+  for ((i=0;i<width;i++)); do
+    r=$(_interp_int "$sr" "$er" "$i" "$width")
+    g=$(_interp_int "$sg" "$eg" "$i" "$width")
+    b=$(_interp_int "$sb" "$eb" "$i" "$width")
+    printf "%b█" "$(rgb_fg "$r" "$g" "$b")"
+  done
+  cml_reset
+  printf "\n"
+  return 0
+}
+
+# -----------------------
+# Backwards-compat : to_fg_seq (returns an escape sequence)
+# -----------------------
+to_fg_seq() {
+  local v="$1"
+  if _cml_is_hex6 "$v"; then
+    read -r r g b <<<"$(hex_to_rgb "${v#\#}")"
+    rgb_fg "$r" "$g" "$b"
+  else
+    # if already contains ESC, return it; otherwise fall back to white
+    if printf '%s' "$v" | grep -q $'\e' 2>/dev/null; then
+      printf "%s" "$v"
+    else
+      rgb_fg 255 255 255
+    fi
+  fi
+}
+
+# expose
+export -f cml_read_theme cml_load_palette hex_to_rgb rgb_fg rgb_bg cml_apply_theme_gradient cml_render_gradient_bar to_fg_seq cml_reset
+
+# When sourced, initialize theme variables for the environment
+cml_read_theme >/dev/null 2>&1 || true
+cml_load_palette "${CURRENT_THEME_RAW:-CLASSIC}" >/dev/null 2>&1 || true
+
+# friendly load message
+printf "✔ COLOR MASTER TRUECOLOR ENGINE LOADED (%s)\n" "$CML_TRUECOLOR_VERSION"
+if [ "$(cml_truecolor_supported 2>/dev/null || echo 0)" -eq 1 ]; then
+  printf "🎯 TRUECOLOR SUPPORTED\n"
+else
+  printf "⚠ TRUECOLOR NOT SUPPORTED — FALLBACKS ENABLED\n"
+fi

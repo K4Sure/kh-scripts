@@ -1,0 +1,59 @@
+Started at: Sat Oct  4 22:53:48 +08 2025
+
+[1] Version
+CSML v1.0.0-prelaunch
+
+[2] Arrows Test
+arrow_up     -> ↑ ↑ ↑
+arrow_down   -> ↓ ↓ ↓
+arrow_left   -> ← ← ←
+arrow_right  -> → → →
+arrow_both   -> ↔ ↔ ↔
+arrow_vert   -> ↕ ↕ ↕
+
+[3] Stars Test
+star_full    -> ★ ★ ★
+star_empty   -> ☆ ☆ ☆
+star_four    -> ✦ ✦ ✦
+star_spark   -> ✧ ✧ ✧
+
+[4] Blocks Test
+block_full   -> █ █ █
+block_half   -> ▓ ▓ ▓
+block_mid    -> ▒ ▒ ▒
+block_light  -> ░ ░ ░
+
+[5] Misc Test
+check        -> ✔ ✔ ✔
+cross        -> ✘ ✘ ✘
+heart        -> ♥ ♥ ♥
+music        -> ♪ ♪ ♪
+
+[6] Demo Script Output
+== Characters & Symbols Master Library Demo ==
+CSML v1.0.0-prelaunch
+
+Arrows:
+ Up:    ↑
+ Down:  ↓
+ Left:  ←
+ Right: →
+ Both:  ↔, ↕
+
+Stars:
+ Full:  ★
+ Empty: ☆
+ Four:  ✦
+ Spark: ✧
+
+Blocks:
+ Full:  █
+ Half:  ▓
+ Mid:   ▒
+ Light: ░
+
+Misc:
+ Check: ✔
+ Cross: ✘
+ Heart: ♥
+ Music: ♪

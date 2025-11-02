@@ -1,0 +1,4 @@
+CML_FG_PRIMARY="$(cml::rgb fg 200 200 255)"
+CML_BG_PRIMARY="$(cml::rgb bg 10 6 20)"
+CML_ACCENT="$(cml::rgb fg 255 100 180)"
+CML_MUTED="$(cml::fg256 241)"

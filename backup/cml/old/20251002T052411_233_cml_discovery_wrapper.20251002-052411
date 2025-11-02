@@ -1,0 +1,8 @@
+#!/data/data/com.termux/files/usr/bin/bash
+LIB_PATH="$HOME/kh-scripts/library/colors/cml_discovery.sh"
+if [ -f "$LIB_PATH" ]; then
+    source "$LIB_PATH"
+    echo -e "\e[38;2;0;255;0m✅ Color Master Library Loaded\e[0m"
+else
+    echo "⚠️ $LIB_PATH not found!"
+fi

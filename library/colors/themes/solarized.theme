@@ -1,0 +1,4 @@
+CML_FG_PRIMARY="$(cml::fg256 250)"
+CML_BG_PRIMARY="$(cml::fg256 234)"
+CML_ACCENT="$(cml::fg256 136)"
+CML_MUTED="$(cml::fg256 240)"

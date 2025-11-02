@@ -1,0 +1,262 @@
+#!/usr/bin/env bash
+# cml-truecolor.sh — Color Master Library — TrueColor Engine (clean, exportable)
+# Version:
+CML_TRUECOLOR_VERSION="v1.6.1-fixed"
+
+# --- Helpers (safe to be sourced) ---
+_cml_trim() { local s="$1"; s="${s//$'\r'/}"; s="${s#"${s%%[![:space:]]*}"}"; s="${s%"${s##*[![:space:]]}"}"; printf '%s' "$s"; }
+
+cml_truecolor_supported() {
+  [[ "${CML_FORCE_TRUECOLOR:-}" == 1 ]] && return 0
+  [[ "${COLORTERM:-}" == *truecolor* ]] || [[ "${TERM:-}" == *-truecolor* ]]
+}
+
+# Hex (#RRGGBB or RRGGBB) -> prints "R G B" or returns non-zero on bad input
+hex_to_rgb() {
+  local hex="${1##\#}"
+  [[ ${#hex} -eq 6 ]] || return 1
+  printf '%d %d %d' $((16#${hex:0:2})) $((16#${hex:2:2})) $((16#${hex:4:2}))
+}
+
+# 24-bit RGB FG / BG and reset
+rgb_fg()  { printf '\033[38;2;%d;%d;%dm' "$1" "$2" "$3"; }
+rgb_bg()  { printf '\033[48;2;%d;%d;%dm' "$1" "$2" "$3"; }
+cml_reset(){ printf '\033[0m'; }
+
+# 256-color fallback helper (extendable)
+cml_fallback_color() {
+  local key="${1:-}"
+  case "${key^^}" in
+    RED)    printf '\033[38;5;196m' ;;
+    GREEN)  printf '\033[38;5;46m'  ;;
+    BLUE)   printf '\033[38;5;33m'  ;;
+    YELLOW) printf '\033[38;5;226m' ;;
+    ORANGE) printf '\033[38;5;208m' ;;
+    PURPLE) printf '\033[38;5;201m' ;;
+    CYAN)   printf '\033[38;5;51m'  ;;
+    *) 
+      if [[ "$key" =~ ^[0-9]+$ ]]; then
+        printf '\033[38;5;%sm' "$key"
+      else
+        printf '\033[0m'
+      fi
+      ;;
+  esac
+}
+
+# --- Palette loader (add themes here) ---
+cml_load_palette() {
+  local theme="${1:-$(cml_refresh_theme)}"
+  theme="${theme^^}"
+
+  CML_GRAD_START="#CCCCCC"
+  CML_GRAD_END="#FFFFFF"
+  CML_C1="#FFFFFF"
+  CML_C2="#AAAAAA"
+  CML_C3="#000000"
+
+  case "$theme" in
+    CLASSIC)
+      CML_GRAD_START="#DCDCDC"; CML_GRAD_END="#6E6E6E"; CML_C1="#FFFFFF"; CML_C2="#BFBFBF"; CML_C3="#FFD700"
+      ;;
+    NEON:RED)
+      CML_GRAD_START="#FF2D55"; CML_GRAD_END="#FF9AAF"; CML_C1="#FF2D55"; CML_C2="#FF9AAF"; CML_C3="#FFFFFF"
+      ;;
+    NEON:ORANGE)
+      CML_GRAD_START="#FF6A00"; CML_GRAD_END="#FFD580"; CML_C1="#FF6A00"; CML_C2="#FFB14D"; CML_C3="#FFFFFF"
+      ;;
+    NEON:YELLOW)
+      CML_GRAD_START="#FFD700"; CML_GRAD_END="#FFFF99"; CML_C1="#FFD700"; CML_C2="#FFF59A"; CML_C3="#000000"
+      ;;
+    NEON:GREEN)
+      CML_GRAD_START="#00FF6A"; CML_GRAD_END="#B9FFB9"; CML_C1="#00FF6A"; CML_C2="#A0FFA0"; CML_C3="#000000"
+      ;;
+    NEON:BLUE)
+      CML_GRAD_START="#00A7FF"; CML_GRAD_END="#A6ECFF"; CML_C1="#00A7FF"; CML_C2="#7FD7FF"; CML_C3="#FFFFFF"
+      ;;
+    NEON:PURPLE)
+      CML_GRAD_START="#9A4DFF"; CML_GRAD_END="#E0B3FF"; CML_C1="#9A4DFF"; CML_C2="#CFA6FF"; CML_C3="#FFFFFF"
+      ;;
+    FOREST)
+      CML_GRAD_START="#0B6623"; CML_GRAD_END="#8FE39E"; CML_C1="#0B6623"; CML_C2="#2E8B57"; CML_C3="#A8E6A3"
+      ;;
+    DESERT)
+      CML_GRAD_START="#C2A77B"; CML_GRAD_END="#F7E7C4"; CML_C1="#C2A77B"; CML_C2="#E0C9A9"; CML_C3="#FFF7E0"
+      ;;
+    OCEAN)
+      CML_GRAD_START="#02457A"; CML_GRAD_END="#29B6F6"; CML_C1="#02457A"; CML_C2="#00B4FF"; CML_C3="#66CCFF"
+      ;;
+    SUMMER)
+      CML_GRAD_START="#FFD447"; CML_GRAD_END="#B8FF67"; CML_C1="#FFD447"; CML_C2="#D7FF91"; CML_C3="#2ECC71"
+      ;;
+    WINTER)
+      CML_GRAD_START="#0C7BD0"; CML_GRAD_END="#BFE7FF"; CML_C1="#0C7BD0"; CML_C2="#4CA6E7"; CML_C3="#E6F7FF"
+      ;;
+    WILD)
+      CML_GRAD_START="#FF2D95"; CML_GRAD_END="#39FF83"; CML_C1="#FF2D95"; CML_C2="#39FF83"; CML_C3="#FFFFFF"
+      ;;
+    *)
+      # fallback -> CLASSIC
+      CML_GRAD_START="#DCDCDC"; CML_GRAD_END="#6E6E6E"; CML_C1="#FFFFFF"; CML_C2="#BFBFBF"; CML_C3="#FFD700"
+      ;;
+  esac
+
+  export CML_GRAD_START CML_GRAD_END CML_C1 CML_C2 CML_C3
+}
+
+# interpolation helper
+__interp_channel() {
+  local s=$1 e=$2 pos=$3 tot=$4
+  if (( tot <= 0 )); then printf '%d' "$s"; return; fi
+  printf '%d' $(( s + ((e - s) * pos) / tot ))
+}
+
+# --- API: apply gradient across a text ---
+cml_apply_theme_gradient() {
+  local text="$1"
+  local theme="${2:-$(cml_refresh_theme)}"
+  cml_load_palette "$theme"
+
+  local s_hex="${CML_GRAD_START##\#}" e_hex="${CML_GRAD_END##\#}"
+  local r1 g1 b1 r2 g2 b2
+  read -r r1 g1 b1 <<< "$(hex_to_rgb "$s_hex")" || return 1
+  read -r r2 g2 b2 <<< "$(hex_to_rgb "$e_hex")" || return 1
+
+  local n=${#text}
+  local tot=$(( n > 1 ? n - 1 : 1 ))
+  local i=0 ch
+  # iterate per character
+  while IFS= read -r -n1 ch; do
+    local r g b
+    r=$(__interp_channel "$r1" "$r2" "$i" "$tot")
+    g=$(__interp_channel "$g1" "$g2" "$i" "$tot")
+    b=$(__interp_channel "$b1" "$b2" "$i" "$tot")
+    if cml_truecolor_supported; then
+      printf '%s' "$(rgb_fg "$r" "$g" "$b")${ch}$(cml_reset)"
+    else
+      local mid=$(( tot / 2 ))
+      if (( i == mid )); then
+        printf '%s' "$(cml_fallback_color "${CML_C1}")${ch}$(cml_reset)"
+      else
+        printf '%s' "${ch}"
+      fi
+    fi
+    ((i++))
+  done <<< "$text"
+  printf '\n'
+}
+
+# --- API: render gradient bar (width chars, each prints two spaces) ---
+cml_render_gradient_bar() {
+  local width="${1:-}"
+  local theme="${2:-$(cml_refresh_theme)}"
+  cml_load_palette "$theme"
+
+  if [[ -z "$width" ]]; then
+    local cols="$(tput cols 2>/dev/null || echo 80)"
+    width=$(( cols / 2 ))
+    (( width < 10 )) && width=10
+  fi
+
+  local s_hex="${CML_GRAD_START##\#}" e_hex="${CML_GRAD_END##\#}"
+  local r1 g1 b1 r2 g2 b2
+  read -r r1 g1 b1 <<< "$(hex_to_rgb "$s_hex")" || return 1
+  read -r r2 g2 b2 <<< "$(hex_to_rgb "$e_hex")" || return 1
+
+  local i=0 tot=$(( width - 1 ))
+  while (( i < width )); do
+    local r g b
+    r=$(__interp_channel "$r1" "$r2" "$i" "$tot")
+    g=$(__interp_channel "$g1" "$g2" "$i" "$tot")
+    b=$(__interp_channel "$b1" "$b2" "$i" "$tot")
+    if cml_truecolor_supported; then
+      printf '%s' "$(rgb_bg "$r" "$g" "$b")  $(cml_reset)"
+    else
+      printf '%s' "$(cml_fallback_color "${CML_C2}")  $(cml_reset)"
+    fi
+    ((i++))
+  done
+  printf '\n'
+}
+
+# cml_refresh_theme reads the .cml_theme file (or returns CLASSIC)
+cml_refresh_theme() {
+  local file="${CML_DIR:-$HOME/kh-scripts/library/colors}/.cml_theme"
+  if [[ -f "$file" ]]; then
+    local t; t="$(_cml_trim "$(cat "$file")")"
+    t="${t^^}"
+    printf '%s' "${t:-CLASSIC}"
+  else
+    printf '%s' "CLASSIC"
+  fi
+}
+
+cml_colorize() {
+  local text="$1" local color="$2"
+  if cml_truecolor_supported; then
+    local rgb; rgb="$(hex_to_rgb "${color##\#}" 2>/dev/null)" || { printf '%s\n' "$text"; return; }
+    read -r r g b <<< "$rgb"
+    printf '%s' "$(rgb_fg "$r" "$g" "$b")${text}$(cml_reset)"
+  else
+    printf '%s' "$(cml_fallback_color "${color}")${text}$(cml_reset)"
+  fi
+  printf '\n'
+}
+
+cml_title() { cml_apply_theme_gradient "$1" "${2:-$(cml_refresh_theme)}"; }
+
+# Export API (export -f is safe for bash)
+export -f cml_truecolor_supported hex_to_rgb rgb_fg rgb_bg cml_load_palette \
+  cml_apply_theme_gradient cml_render_gradient_bar cml_colorize cml_refresh_theme cml_reset cml_title
+
+# Engine banner (only once per shell)
+if [[ -z "${CML_TRUECOLOR_LOADED:-}" ]]; then
+  CML_TRUECOLOR_LOADED=1
+  export CML_TRUECOLOR_LOADED
+banner_theme="${banner_theme:-$(cml_refresh_theme)}"
+  cml_apply_theme_gradient "✔ COLOR MASTER TRUECOLOR ENGINE LOADED (${CML_TRUECOLOR_VERSION})" "$banner_theme"
+fi
+
+================================================================
+
+# CML THEME READ/WRITE HANDLER (STANDARDIZED v2025-10-24)
+
+================================================================
+
+THEME_FILE="$HOME/kh-scripts/library/colors/.cml_theme"
+
+THEME WRITE STANDARD (FIXED)
+
+cml_write_theme() {
+local UTHEME="${1^^}"
+UTHEME="${UTHEME//[$'\r\n' ]/}"  # strip newline & spaces
+printf "%s" "$UTHEME" > "$THEME_FILE"
+sync
+printf "\n"
+printf "✔ THEME SET: %s\n" "$UTHEME"
+}
+
+THEME READ STANDARD
+
+cml_read_theme() {
+  if [ -f "$THEME_FILE" ]; then
+    CURRENT_THEME=$(< "$THEME_FILE")
+    CURRENT_THEME="${CURRENT_THEME//[$'\r\n']/}"
+    CURRENT_THEME="${CURRENT_THEME^^}"
+  else
+    CURRENT_THEME=""
+  fi
+
+  if [ -z "$CURRENT_THEME" ]; then
+    CURRENT_THEME="CLASSIC"
+    printf "%s" "$CURRENT_THEME" > "$THEME_FILE"
+    sync
+    printf "\n"
+    printf "✔ THEME SET: %s\n" "$CURRENT_THEME"
+  fi
+}
+
+# ========================================================================
+# # END OF THEME HANDLER SECTION
+# ========================================================================
+

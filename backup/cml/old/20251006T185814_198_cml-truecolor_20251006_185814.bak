@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# COLOR MASTER LIBRARY — TRUECOLOR ENGINE
+# Version: v1.3.1
+# Single source of truth for color/gradient rendering (ONLY THIS FILE CHANGED)
+CML_TRUECOLOR_VERSION="v1.3.1"
+
+# -------------------------
+# TRUECOLOR DETECTION
+# -------------------------
+cml_truecolor_supported() {
+  [[ "$COLORTERM" == *"truecolor"* || "$COLORTERM" == *"24bit"* ]]
+}
+
+# -------------------------
+# SMALL HELPERS
+# -------------------------
+rgb_reset() { printf '\033[0m'; }
+
+# Convert #RRGGBB -> space-separated R G B
+hex_to_rgb_space() {
+  local hex="${1#\#}"
+  printf '%d %d %d' $((16#${hex:0:2})) $((16#${hex:2:2})) $((16#${hex:4:2}))
+}
+
+# Foreground and background helpers (accept "#RRGGBB")
+rgb_fg() {
+  local r g b
+  read -r r g b <<< "$(hex_to_rgb_space "$1")"
+  printf '\033[38;2;%d;%d;%dm' "$r" "$g" "$b"
+}
+rgb_bg() {
+  local r g b
+  read -r r g b <<< "$(hex_to_rgb_space "$1")"
+  printf '\033[48;2;%d;%d;%dm' "$r" "$g" "$b"
+}
+
+# Determine half terminal width (fallback 40)
+cml_half_width() {
+  local cols
+  cols=$(tput cols 2>/dev/null || echo 80)
+  echo $(( (cols > 4) ? cols/2 : 40 ))
+}
+
+# -------------------------
+# THEME PALETTES (PRIMARY / SECONDARY)
+# -------------------------
+# This function will set C_PRIMARY and C_SECONDARY and update CURRENT_THEME.
+cml_load_palette() {
+  local theme="${1:-${CURRENT_THEME:-CLASSIC}}"
+  theme="${theme^^}"
+  CURRENT_THEME="$theme"
+
+  case "$theme" in
+    CLASSIC)      C_PRIMARY="#AAAAAA"; C_SECONDARY="#FFFFFF" ;;
+    NEON:RED)     C_PRIMARY="#FF0040"; C_SECONDARY="#FF80A0" ;;
+    NEON:ORANGE)  C_PRIMARY="#FF8000"; C_SECONDARY="#FFD080" ;;
+    NEON:YELLOW)  C_PRIMARY="#FFF200"; C_SECONDARY="#FFF8B0" ;;
+    NEON:GREEN)   C_PRIMARY="#39FF14"; C_SECONDARY="#BFFFC9" ;;
+    NEON:BLUE)    C_PRIMARY="#00A0FF"; C_SECONDARY="#80D0FF" ;;
+    NEON:PURPLE)  C_PRIMARY="#C000FF"; C_SECONDARY="#E0A0FF" ;;
+    FOREST)       C_PRIMARY="#004400"; C_SECONDARY="#33CC33" ;;
+    DESERT)       C_PRIMARY="#C19A6B"; C_SECONDARY="#FFF0C2" ;;
+    OCEAN)        C_PRIMARY="#001F3F"; C_SECONDARY="#00CCFF" ;;
+    SUMMER)       C_PRIMARY="#FFCC33"; C_SECONDARY="#99FF66" ;;
+    WINTER)       C_PRIMARY="#66B2FF"; C_SECONDARY="#003366" ;;
+    WILD)         C_PRIMARY="#FF1493"; C_SECONDARY="#32CD32" ;;
+    *)            C_PRIMARY="#AAAAAA"; C_SECONDARY="#FFFFFF" ;;
+  esac
+}
+
+# -------------------------
+# Render gradient bar between C_PRIMARY -> C_SECONDARY
+# Accepts optional theme; if omitted uses CURRENT_THEME
+# -------------------------
+cml_render_gradient_bar() {
+  local arg_theme="${1:-}"
+  local theme="${arg_theme:-${CURRENT_THEME:-CLASSIC}}"
+  theme="${theme^^}"
+  cml_load_palette "$theme"
+
+  local width
+  width=$(cml_half_width)
+  # Read start/end RGB as integers
+  read -r sr sg sb <<< "$(hex_to_rgb_space "$C_PRIMARY")"
+  read -r er eg eb <<< "$(hex_to_rgb_space "$C_SECONDARY")"
+
+  if cml_truecolor_supported; then
+    # guard width minimum
+    [ "$width" -lt 2 ] && width=2
+    for ((i=0; i<width; i++)); do
+      # interpolation factor (0..1) using integer math
+      local t_num=$i
+      local t_den=$((width - 1))
+      local r=$(( sr + (er - sr) * t_num / t_den ))
+      local g=$(( sg + (eg - sg) * t_num / t_den ))
+      local b=$(( sb + (eb - sb) * t_num / t_den ))
+      printf '\033[48;2;%d;%d;%dm ' "$r" "$g" "$b"
+    done
+    rgb_reset
+    printf '\n'
+  else
+    # fallback: use blocks
+    printf '█%.0s' $(seq 1 "$width")
+    printf '\n'
+  fi
+}
+
+# -------------------------
+# Apply gradient across text characters (primary -> secondary)
+# Accepts optional theme; defaults to CURRENT_THEME
+# -------------------------
+cml_apply_theme_gradient() {
+  local text="$1"
+  local arg_theme="${2:-}"
+  local theme="${arg_theme:-${CURRENT_THEME:-CLASSIC}}"
+  theme="${theme^^}"
+  cml_load_palette "$theme"
+
+  local len=${#text}
+  [ "$len" -le 0 ] && return 0
+
+  read -r sr sg sb <<< "$(hex_to_rgb_space "$C_PRIMARY")"
+  read -r er eg eb <<< "$(hex_to_rgb_space "$C_SECONDARY")"
+
+  # avoid division by zero
+  local denom=$(( len - 1 ))
+  [ "$denom" -lt 1 ] && denom=1
+
+  for ((i=0; i<len; i++)); do
+    local r=$(( sr + (er - sr) * i / denom ))
+    local g=$(( sg + (eg - sg) * i / denom ))
+    local b=$(( sb + (eb - sb) * i / denom ))
+    printf '\033[38;2;%d;%d;%dm%s' "$r" "$g" "$b" "${text:i:1}"
+  done
+  rgb_reset
+  printf '\n'
+}
+
+# -------------------------
+# Small utility: print title (uses theme)
+# -------------------------
+cml_title() {
+  local title="$1"
+  local theme="${2:-${CURRENT_THEME:-CLASSIC}}"
+  cml_apply_theme_gradient "=== $title ===" "$theme"
+}
+
+# -------------------------
+# Fallback 256 color (index)
+# -------------------------
+cml_fallback_color() {
+  local idx="${1:-1}"
+  printf '\033[38;5;%dm' "$((30 + (idx % 100)))"
+}
+
+# -------------------------
+# On source: set a friendly load message (do not overwrite caller state)
+# -------------------------
+# If CURRENT_THEME unset, set default now (respecting previous behavior)
+: "${CURRENT_THEME:=CLASSIC}"
+# Do not print noise in scripts that source this silently — print short confirmation.
+printf '✔ COLOR MASTER TRUECOLOR ENGINE LOADED (%s)\n' "$CML_TRUECOLOR_VERSION"

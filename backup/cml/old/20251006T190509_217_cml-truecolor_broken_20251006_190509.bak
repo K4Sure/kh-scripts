@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# ==============================================
+# COLOR MASTER TRUECOLOR ENGINE v1.5.1-pre
+# ==============================================
+# SINGLE SOURCE OF TRUTH FOR TRUECOLOR FEATURES
+# ==============================================
+
+CML_TRUECOLOR_VERSION="v1.5.1-pre"
+
+# === AUTO-LOAD SAFEGUARD ===
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  echo "⚠ THIS FILE MUST BE SOURCED, NOT EXECUTED."
+  echo "Use: source ~/kh-scripts/library/colors/cml-truecolor.sh"
+  exit 1
+fi
+
+# === BASIC UTILITIES ===
+cml_reset() { printf "\033[0m"; }
+
+# === HEX → RGB CONVERSION ===
+hex_to_rgb() {
+  local hex="\${1#\#}"
+  local r=\$((16#\${hex:0:2}))
+  local g=\$((16#\${hex:2:2}))
+  local b=\$((16#\${hex:4:2}))
+  printf "%d;%d;%d" "\$r" "\$g" "\$b"
+}
+
+# === RGB FOREGROUND / BACKGROUND ===
+rgb_fg() { printf "\033[38;2;%s;%s;%sm" "\${1}" "\${2}" "\${3}"; }
+rgb_bg() { printf "\033[48;2;%s;%s;%sm" "\${1}" "\${2}" "\${3}"; }
+
+# === CHECK TRUECOLOR SUPPORT ===
+cml_truecolor_supported() {
+  [[ "\$COLORTERM" == *truecolor* ]] && return 0 || return 1
+}
+
+# === TITLE PRINT ===
+cml_title() {
+  printf "\n\033[1;38;2;255;0;255m=== %s ===\033[0m\n" "\$1"
+}
+
+# === PALETTES ===
+cml_load_palette() {
+  local theme="\${1^^}"
+  case "\$theme" in
+    CLASSIC)  PALETTE=("255;255;255" "0;0;0");;
+    FOREST)   PALETTE=("34;139;34" "0;100;0");;
+    DESERT)   PALETTE=("210;180;140" "139;69;19");;
+    OCEAN)    PALETTE=("70;130;180" "0;0;128");;
+    SUMMER)   PALETTE=("255;165;0" "255;69;0");;
+    WINTER)   PALETTE=("135;206;250" "25;25;112");;
+    WILD)     PALETTE=("255;0;255" "128;0;128");;
+    NEON:RED)     PALETTE=("255;0;0" "128;0;0");;
+    NEON:ORANGE)  PALETTE=("255;140;0" "255;69;0");;
+    NEON:BLUE)    PALETTE=("0;191;255" "0;0;139");;
+    NEON:PURPLE)  PALETTE=("186;85;211" "148;0;211");;
+    *)         PALETTE=("255;255;255" "0;0;0");;
+  esac
+}
+
+# === STATUS ===
+echo "✔ COLOR MASTER TRUECOLOR ENGINE LOADED (\$CML_TRUECOLOR_VERSION)"

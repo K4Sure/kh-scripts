@@ -1,0 +1,299 @@
+#!/usr/bin/env bash
+# sbm_v2.0.0.sh
+# SMART BACKUP MANAGER — Termux-friendly single-file
+# RULES ENFORCED:
+#  - SCRIPT LIVES AT: /data/data/com.termux/files/home/kh-scripts/sbm
+#  - ALL BACKUPS GO TO: /data/data/com.termux/files/home/kh-scripts/backup/<lib>
+#  - TIMESTAMP: YYYYMMDD_HHMM (NO SECONDS)
+#  - NO LOG FILES
+#  - SYSTEM MESSAGES UPPERCASE (printf only)
+set -euo pipefail
+
+SBM_VERSION="v2.0.0"
+
+# CENTRAL PATHS (hard-coded per your rule)
+INSTALL_DIR="/data/data/com.termux/files/home/kh-scripts"
+INSTALLED_BIN="${INSTALL_DIR}/sbm"
+BACKUP_DIR="${INSTALL_DIR}/backup"
+
+KEEP_COUNT=10                    # how many recent backups to keep per library
+LOCKDIR="${BACKUP_DIR}/.sbm_lock.$$"
+
+# PRINTING HELPERS
+upper_print() {
+  printf "%s\n" "$(printf "%s" "$1" | awk '{print toupper($0)}')"
+}
+now_ds_minutes() { date +"%Y%m%d_%H%M"; }   # YYYYMMDD_HHMM
+
+# SELF-INSTALL: run "install" to copy this script to INSTALL_DIR/sbm so 'sbm' is global
+# Installer WILL BACK UP existing /.../kh-scripts/sbm to:
+#   /.../kh-scripts/backup/sbm/sbm_<YYYYMMDD_HHMM>.backup
+if [ "${1:-}" = "install" ]; then
+  if [ ! -f "$0" ]; then
+    upper_print "❌ CANNOT LOCATE SELF PATH TO INSTALL"
+    exit 1
+  fi
+
+  # ensure primary dirs exist
+  mkdir -p "$INSTALL_DIR"
+  mkdir -p "$BACKUP_DIR"
+
+  # backup existing sbm if present — move it into BACKUP_DIR/sbm/
+  if [ -f "$INSTALLED_BIN" ]; then
+    mkdir -p "${BACKUP_DIR}/sbm"
+    bak="${BACKUP_DIR}/sbm/sbm_$(now_ds_minutes).backup"
+    mv -- "$INSTALLED_BIN" "$bak"
+    upper_print "✔ BACKED UP EXISTING: sbm → $(basename -- "$bak")"
+  fi
+
+  cp -- "$0" "$INSTALLED_BIN"
+  chmod +x "$INSTALLED_BIN"
+  upper_print "✔ INSTALLED: $INSTALLED_BIN"
+  upper_print "✔ NOW CALLABLE AS: sbm <file|dir>"
+  exit 0
+fi
+
+# ensure backup root exists
+mkdir -p "$BACKUP_DIR"
+
+# simple lock to avoid concurrent runs
+if mkdir "$LOCKDIR" 2>/dev/null; then
+  trap 'rmdir "$LOCKDIR" >/dev/null 2>&1 || true; exit' INT TERM EXIT
+else
+  upper_print "❌ ANOTHER BACKUP RUN IS IN PROGRESS. ABORTING."
+  exit 1
+fi
+
+# state for summary
+success_count=0; skip_count=0; fail_count=0
+declare -a success_list; declare -a skip_list; declare -a fail_list
+
+# ---- utility functions ----
+read_first_lines() { sed -n "1,${1:-120}p" -- "$2" 2>/dev/null || true; }
+
+# authoritative SCRIPT_VERSION="vX.Y.Z..."
+detect_script_version() {
+  local file="$1" ver=""
+  if [ -f "$file" ]; then
+    ver="$(read_first_lines 120 "$file" \
+      | sed -n -E 's/^[[:space:]]*SCRIPT_VERSION[[:space:]]*=[[:space:]]*["'\'']?(v[0-9]+(\.[0-9]+){0,}([A-Za-z0-9._-]*)?)["'\'']?[[:space:]]*$/\1/p' \
+      | head -n1 || true)"
+    if [ -z "$ver" ]; then
+      ver="$(grep -m1 -Eo 'v?[0-9]+(\.[0-9]+){1,}([A-Za-z0-9._-]*)' "$file" 2>/dev/null || true)"
+      if [ -n "$ver" ] && [[ "$ver" != v* ]]; then ver="v$ver"; fi
+    fi
+  fi
+  printf "%s" "$ver"
+}
+
+# detect library name from path: if path contains /library/<name>/ use that name
+detect_library_from_path() {
+  local path="$1" lib=""
+  if echo "$path" | grep -q "/library/"; then
+    lib="$(echo "$path" | sed -E 's@.*/library/([^/]+).*@\1@' | sed -E 's/[^A-Za-z0-9._-]/_/g')"
+  else
+    local parent
+    parent="$(basename "$(dirname -- "$path")")"
+    case "${parent,,}" in
+      cml|dbml|colors|virustotal) lib="${parent,,}" ;;
+      *) lib="" ;;
+    esac
+  fi
+  printf "%s" "$lib"
+}
+
+# create backup filename using minutes-only timestamp, following project rules
+# destination WILL BE: BACKUP_DIR/<lib_or_root>/<name>_<version_or_YYYYMMDD_HHMM>.backup
+make_backup_path() {
+  local src="$1" fn base base_noext ext libsub lib_dir ts target result
+  fn="$(basename -- "$src")"
+  if [[ "$fn" == *.* ]]; then ext=".${fn##*.}"; base_noext="${fn%.*}"; else ext=""; base_noext="$fn"; fi
+
+  libsub="$(detect_library_from_path "$src" || true)"
+  if [ -n "$libsub" ]; then lib_dir="${BACKUP_DIR}/${libsub}"; else lib_dir="${BACKUP_DIR}"; fi
+  mkdir -p "$lib_dir"
+
+  # if filename already contains version-like token, append minutes timestamp
+  if printf '%s' "$base_noext" | grep -Eq '[_-]v[0-9]+(\.[0-9]+){1,}'; then
+    ts="$(now_ds_minutes)"
+    target="${base_noext}_${ts}.backup"
+  else
+    local script_version=""
+    if [ -f "$src" ]; then script_version="$(detect_script_version "$src" || true)"; fi
+    if [ -n "$script_version" ]; then
+      target="${base_noext}_${script_version}.backup"
+    else
+      ts="$(now_ds_minutes)"
+      target="${base_noext}_${ts}.backup"
+    fi
+  fi
+
+  result="${lib_dir}/${target}"
+  printf "%s" "$result"
+}
+
+# prune function: keep most recent KEEP_COUNT .backup files in lib dir
+organize_backups() {
+  local lib_dir="$1" keep="${2:-$KEEP_COUNT}"
+  [ -d "$lib_dir" ] || return 0
+  local files
+  files=$(find "$lib_dir" -maxdepth 1 -type f -name '*.backup' -printf '%T@ %p\n' 2>/dev/null \
+    | sort -rn | awk '{print $2}' || true)
+  if [ -z "$files" ]; then files=$(ls -1t "$lib_dir"/*.backup 2>/dev/null || true); fi
+  local idx=0
+  while IFS= read -r f; do
+    idx=$((idx+1))
+    if [ "$idx" -gt "$keep" ]; then
+      rm -f -- "$f" 2>/dev/null || true
+      upper_print "✔ PRUNED OLD BACKUP: $(basename -- "$f")"
+      skip_list+=("PRUNED: $(basename -- "$f")")
+      skip_count=$((skip_count+1))
+    fi
+  done <<< "$files"
+}
+
+# backup a path
+backup_one() {
+  local src="$1" dest_path dest_dir tar_name base_lower
+  if [ ! -e "$src" ]; then
+    upper_print "❌ SOURCE NOT FOUND: $src"
+    fail_list+=("$src (NOT FOUND)")
+    fail_count=$((fail_count+1))
+    return 1
+  fi
+
+  # prevent backing up the backup root itself
+  case "$src" in
+    "$BACKUP_DIR" | "$BACKUP_DIR"/*)
+      upper_print "❌ REFUSING TO BACKUP THE BACKUP FOLDER OR ITS CONTENTS: $src"
+      fail_list+=("$src (REFUSE)")
+      fail_count=$((fail_count+1))
+      return 1
+      ;;
+  esac
+
+  dest_path="$(make_backup_path "$src")"
+  dest_dir="$(dirname -- "$dest_path")"
+  mkdir -p "$dest_dir"
+
+  # directories -> tar.gz (store archive under backup dir; filename uses .backup.tar.gz)
+  if [ -d "$src" ]; then
+    tar_name="${dest_path}"
+    if [[ "$tar_name" != *.tar.gz ]]; then tar_name="${tar_name}.tar.gz"; fi
+    upper_print "✔ BACKING UP DIRECTORY: $src → $(basename -- "$tar_name")"
+    if tar -C "$(dirname -- "$src")" -czf "$tar_name" "$(basename -- "$src")"; then
+      sync
+      upper_print "✔ BACKUP COMPLETE: $(basename -- "$tar_name")"
+      success_list+=("DIR: $(basename -- "$tar_name")")
+      success_count=$((success_count+1))
+      organize_backups "$dest_dir"
+      return 0
+    else
+      upper_print "❌ BACKUP FAILED (TAR): $src"
+      fail_list+=("$src (TAR FAIL)")
+      fail_count=$((fail_count+1))
+      return 1
+    fi
+  fi
+
+  # regular files
+  if [ -f "$src" ]; then
+    # skip files that look like backups
+    base_lower="$(basename -- "$src" | awk '{print tolower($0)}')"
+    case "$base_lower" in
+      *bak*|*backup*)
+        upper_print "ℹ SKIPPING FILE (LOOKS LIKE BACKUP): $(basename -- "$src")"
+        skip_list+=("SKIP: $(basename -- "$src")")
+        skip_count=$((skip_count+1))
+        return 0
+        ;;
+    esac
+
+    upper_print "✔ BACKING UP FILE: $src → $(basename -- "$dest_path")"
+    if command -v rsync >/dev/null 2>&1; then
+      if rsync -a --no-compress -- "$src" "$dest_path"; then
+        sync
+        upper_print "✔ BACKUP COMPLETE: $(basename -- "$dest_path")"
+        success_list+=("FILE: $(basename -- "$dest_path")")
+        success_count=$((success_count+1))
+        organize_backups "$dest_dir"
+        return 0
+      else
+        upper_print "❌ BACKUP FAILED (RSYNC): $src"
+        fail_list+=("$src (RSYNC FAIL)")
+        fail_count=$((fail_count+1))
+        return 1
+      fi
+    else
+      if cp -p -- "$src" "$dest_path"; then
+        sync
+        upper_print "✔ BACKUP COMPLETE: $(basename -- "$dest_path")"
+        success_list+=("FILE: $(basename -- "$dest_path")")
+        success_count=$((success_count+1))
+        organize_backups "$dest_dir"
+        return 0
+      else
+        upper_print "❌ BACKUP FAILED (CP): $src"
+        fail_list+=("$src (CP FAIL)")
+        fail_count=$((fail_count+1))
+        return 1
+      fi
+    fi
+  fi
+
+  # other special files (symlinks/devices)
+  upper_print "✔ BACKING UP SPECIAL: $src → $(basename -- "$dest_path")"
+  if cp -p -- "$src" "$dest_path" 2>/dev/null; then
+    sync
+    upper_print "✔ BACKUP COMPLETE: $(basename -- "$dest_path")"
+    success_list+=("SPECIAL: $(basename -- "$dest_path")")
+    success_count=$((success_count+1))
+    organize_backups "$dest_dir"
+    return 0
+  else
+    upper_print "❌ BACKUP FAILED (SPECIAL): $src"
+    fail_list+=("$src (SPECIAL FAIL)")
+    fail_count=$((fail_count+1))
+    return 1
+  fi
+}
+
+# MAIN
+if [ "$#" -lt 1 ]; then
+  upper_print "❌ NO FILES OR DIRECTORIES SPECIFIED. USAGE: sbm <file|dir> [more...]"
+  rmdir "$LOCKDIR" >/dev/null 2>&1 || true
+  exit 2
+fi
+
+upper_print "✔ SBM STARTING: $SBM_VERSION"
+
+for src in "$@"; do
+  backup_one "$src" || true
+done
+
+rmdir "$LOCKDIR" >/dev/null 2>&1 || true
+trap - EXIT
+
+# SUMMARY (prints skipped and failed backups as requested)
+upper_print "===== SUMMARY ====="
+upper_print "BACKED UP: $success_count"
+upper_print "SKIPPED: $skip_count"
+upper_print "FAILED: $fail_count"
+
+if [ "${#success_list[@]}" -gt 0 ]; then
+  upper_print "SAVED FILES:"
+  for s in "${success_list[@]}"; do printf "%s\n" "  - $s"; done
+fi
+
+if [ "${#skip_list[@]}" -gt 0 ]; then
+  upper_print "SKIPPED ITEMS:"
+  for s in "${skip_list[@]}"; do printf "%s\n" "  - $s"; done
+fi
+
+if [ "${#fail_list[@]}" -gt 0 ]; then
+  upper_print "FAILED ITEMS:"
+  for f in "${fail_list[@]}"; do printf "%s\n" "  - $f"; done
+fi
+
+upper_print "✔ ALL TASKS COMPLETED."
+exit 0

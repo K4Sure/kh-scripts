@@ -1,0 +1,15 @@
+-> csml
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/csml-init
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/csml-set
+Dry-run written to /data/data/com.termux/files/home/kh-scripts/install-shim-dryrun.txt
+-> dbml
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/dbml-init
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/dbml-connect
+Dry-run written to /data/data/com.termux/files/home/kh-scripts/install-shim-dryrun.txt
+-> pml
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/pml-init
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/pml-echo
+Dry-run written to /data/data/com.termux/files/home/kh-scripts/install-shim-dryrun.txt
+-> bmc
+DRY-WRITE: wrote shim: /data/data/com.termux/files/home/kh-scripts/bin/bmc-version
+Dry-run written to /data/data/com.termux/files/home/kh-scripts/install-shim-dryrun.txt

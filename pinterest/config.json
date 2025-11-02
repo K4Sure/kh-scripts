@@ -1,0 +1,16 @@
+{
+  "extractor": {
+    "pinterest": {
+      "username": "",
+      "password": "",
+      "download": true
+    }
+  },
+  "output": {
+    "base-directory": "/storage/emulated/0/Download/Social Media/Pinterest/pinterest-dl/ptdl_raw",
+    "filename": "{id}_{title}.{extension}"
+  },
+  "log": {
+    "level": "INFO"
+  }
+}

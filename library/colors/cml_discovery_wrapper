@@ -1,0 +1,17 @@
+#!/data/data/com.termux/files/usr/bin/env bash
+# cml_discovery_wrapper — helper for sourcing Color Master Library
+# Version: v1.0.0
+# Location: kh-scripts/library/colors
+
+LIB_PATH="$HOME/kh-scripts/library/colors/color_master_library.sh"
+
+if [ -f "$LIB_PATH" ]; then
+    # shellcheck source=/dev/null
+    source "$LIB_PATH"
+    echo "✅ Color Master Library loaded (theme: $CML_ACTIVE_THEME)"
+    echo "Use 'cml-info' or 'cml-cheat' for help."
+else
+    echo "⚠️ CML not found at $LIB_PATH"
+    echo "Please reinstall color_master_library.sh"
+    exit 1
+fi

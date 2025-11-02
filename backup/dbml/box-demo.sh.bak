@@ -1,0 +1,18 @@
+#!/data/data/com.termux/files/usr/bin/env bash
+# box-demo.sh — DBML demonstration
+DBML="$HOME/kh-scripts/library/dynamic_box/dynamic_box_master_library.sh"
+if [ -f "$DBML" ]; then
+    source "$DBML"
+else
+    echo "DBML not found at $DBML"
+    exit 1
+fi
+
+for theme in classic solarized neon darkwave minimal; do
+    cml_apply_theme "$theme"
+    echo
+    draw_box line "Theme: $theme" "This is a line box with $theme theme."
+    draw_box double "Theme: $theme" "Double line box demo."
+    draw_box round "Theme: $theme" "Rounded box demo."
+    pulse_box line "Pulse Demo" "Watch me cycle colors..."
+done

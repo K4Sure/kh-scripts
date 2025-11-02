@@ -1,0 +1,10 @@
+--- detailed_apk_scanner_v1.4.1.py.orig
++++ detailed_apk_scanner_v1.4.1.py
+@@ -1,3 +1,4 @@
++    # Fix dictionary key references
+-    clean_count = len(results[clean])
+-    infected_count = len(results[infected])
+-    unknown_count = len(results[unknown])
++    clean_count = len(results['clean'])
++    infected_count = len(results['infected'])
++    unknown_count = len(results['unknown'])

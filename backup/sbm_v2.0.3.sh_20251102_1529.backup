@@ -1,0 +1,85 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# SMART BACKUP MANAGER (SBM)
+# Version: v2.0.3
+# Author: KH
+# Purpose: Maintain clean backup sets while keeping latest editable source versions
+
+SCRIPT_VERSION="v2.0.3"
+SOURCE_DIR="/data/data/com.termux/files/home/kh-scripts"
+BACKUP_DIR="${SOURCE_DIR}/backup"
+TIMESTAMP=$(date +"%Y%m%d_%H%M")
+DRY_RUN=false  # set to true for dry-run mode (no files moved)
+
+mkdir -p "$BACKUP_DIR"
+
+echo "SMART BACKUP MANAGER $SCRIPT_VERSION"
+echo "SOURCE: $SOURCE_DIR"
+echo "BACKUP: $BACKUP_DIR"
+echo "TIMESTAMP: $TIMESTAMP"
+echo "--------------------------------------------"
+
+# Prepare associative arrays safely
+declare -A groups latest latest_path
+
+# Scan all non-directory items except the backup folder itself
+while IFS= read -r -d '' file; do
+  [ -f "$file" ] || continue
+  base=$(basename "$file")
+
+  # Skip if in backup folder or logs
+  [[ "$file" == *"/backup/"* ]] && continue
+  [[ "$file" == *"/logs/"* ]] && continue
+
+  # Keep SBM active in place
+  [[ "$base" == "sbm" ]] && { 
+    echo "✔ KEEP ACTIVE SBM IN PLACE: ${base^^}"
+    continue
+  }
+
+  # Normalize extension pattern
+  ext="${base##*.}"
+  base_noext="${base%.*}"
+  key="$base_noext"
+
+  # Handle grouped version recognition
+  groups["$key"]=1
+
+  # Determine if this is newer than stored one
+  if [[ ! -v latest["$key"] ]]; then
+    latest["$key"]=$(stat -c "%Y" "$file")
+    latest_path["$key"]="$file"
+  else
+    ts=$(stat -c "%Y" "$file")
+    if (( ts > latest["$key"] )); then
+      latest["$key"]=$ts
+      latest_path["$key"]="$file"
+    fi
+  fi
+done < <(find "$SOURCE_DIR" -maxdepth 1 -type f -print0)
+
+# Now process backups
+for key in "${!groups[@]}"; do
+  keep="${latest_path[$key]}"
+  keep_base=$(basename "$keep")
+  echo "✔ KEEP LATEST IN SOURCE: ${keep_base^^}"
+
+  while IFS= read -r -d '' f; do
+    [[ "$f" == "$keep" ]] && continue
+    basef=$(basename "$f")
+    dest="${BACKUP_DIR}/${basef}_${TIMESTAMP}.backup"
+
+    if $DRY_RUN; then
+      echo "ℹ DRY-RUN: WOULD MOVE: $f → $(basename "$dest")"
+    else
+      mv -f "$f" "$dest" && echo "✔ MOVED TO BACKUP: ${basef^^}"
+    fi
+  done < <(find "$SOURCE_DIR" -maxdepth 1 -type f -name "${key}*" -print0)
+done
+
+if $DRY_RUN; then
+  echo "--------------------------------------------"
+  echo "ℹ DRY-RUN COMPLETE: KH-SCRIPTS_${TIMESTAMP}.BACKUP (NO FILES COPIED)"
+else
+  echo "--------------------------------------------"
+  echo "✔ BACKUP COMPLETE: KH-SCRIPTS_${TIMESTAMP}.BACKUP"
+fi

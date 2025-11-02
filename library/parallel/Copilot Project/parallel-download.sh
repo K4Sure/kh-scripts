@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+# parallel-download.sh
+# Version v1.0.0
+# Place this file in: /data/data/com.termux/files/home/kh-scripts/library/parallel
+set -euo pipefail
+IFS=$'\n\t'
+
+VERSION="v1.0.0"
+
+# ---- Paths (user-specified)
+LIB_DIR="/data/data/com.termux/files/home/kh-scripts/library/parallel"
+URL_FILE="/storage/emulated/0/Download/Social Media/url.txt"
+BASE_DIR="/storage/emulated/0/Download/Social Media"
+LOG_DIR="$BASE_DIR/Logs"
+COOKIES_DIR="$BASE_DIR/Cookies"
+TIKTOK_COOKIE_FILE="$COOKIES_DIR/tiktok_cookies.txt"
+ARCHIVE_DIR="$BASE_DIR/Archives"
+
+# ---- Defaults
+MIN_CONCURRENCY=2
+DEFAULT_RETRIES=3
+DEFAULT_TIMEOUT=600
+
+# ---- yt-dlp template and global options (from user)
+YTDLP_OUTPUT_TEMPLATE="$BASE_DIR/%(extractor)s/%(uploader)s/%(uploader)s_%(autonumber)03d.%(ext)s"
+YTDLP_BASE_OPTS='--limit-rate 5M --format "bv*+ba/b" --merge-output-format mp4 --min-sleep-interval 0 --max-sleep-interval 2 --retries 3 --concurrent-fragments 10 --fragment-retries 3 --extractor-retries 3 --yes-playlist --max-downloads 100 --embed-metadata --embed-thumbnail --continue'
+
+# ---- Ensure required directories exist
+mkdir -p "$LIB_DIR" "$BASE_DIR" "$LOG_DIR" "$COOKIES_DIR" "$ARCHIVE_DIR"
+LOG_FILE="$LOG_DIR/parallel-download.log"
+touch "$LOG_FILE"
+
+timestamp() { date --iso-8601=seconds; }
+
+err_and_exit() { printf '%s\tERROR\t%s\n' "$(timestamp)" "$*" >&2; exit 1; }
+
+detect_cores() {
+  if command -v nproc >/dev/null 2>&1; then
+    nproc --all 2>/dev/null || echo 1
+  else
+    grep -c '^processor' /proc/cpuinfo 2>/dev/null || echo 1
+  fi
+}
+
+map_ext_to_subdir() {
+  local ext="${1,,}"
+  case "$ext" in
+    mp4|mkv|webm|mov|flv|ts|avi) echo "Videos" ;;
+    jpg|jpeg|png|gif|bmp|webp|heic) echo "Photos" ;;
+    mp3|m4a|aac|opus|wav|flac) echo "Audios" ;;
+    *) echo "Others" ;;
+  esac
+}
+
+organize_uploader_dir() {
+  local uploader_dir="$1"
+  [ -d "$uploader_dir" ] || return 0
+  shopt -s nullglob
+  for f in "$uploader_dir"/*.*; do
+    [ -f "$f" ] || continue
+    local fname="$(basename "$f")"
+    local ext="${fname##*.}"
+    local subdir
+    subdir="$(map_ext_to_subdir "$ext")"
+    mkdir -p "$uploader_dir/$subdir"
+    mv -n "$f" "$uploader_dir/$subdir/" 2>/dev/null || mv -f "$f" "$uploader_dir/$subdir/" 2>/dev/null
+  done
+  shopt -u nullglob
+}
+
+# ---- Worker script path (saved inside LIB_DIR)
+WORKER_SCRIPT="$LIB_DIR/parallel-worker.sh"
+
+# Write worker script (self-contained, inserted values are expanded here)
+cat > "$WORKER_SCRIPT" <<'WORKER_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+
+URL="$1"
+BASE_DIR='__BASE_DIR__'
+ARCHIVE_DIR='__ARCHIVE_DIR__'
+COOKIES_DIR='__COOKIES_DIR__'
+LOG_FILE='__LOG_FILE__'
+YTDLP_OUTPUT_TEMPLATE='__YTDLP_OUTPUT_TEMPLATE__'
+YTDLP_BASE_OPTS='__YTDLP_BASE_OPTS__'
+DEFAULT_TIMEOUT='__DEFAULT_TIMEOUT__'
+
+timestamp() { date --iso-8601=seconds; }
+
+map_ext_to_subdir() {
+  local ext="${1,,}"
+  case "$ext" in
+    mp4|mkv|webm|mov|flv|ts|avi) echo "Videos" ;;
+    jpg|jpeg|png|gif|bmp|webp|heic) echo "Photos" ;;
+    mp3|m4a|aac|opus|wav|flac) echo "Audios" ;;
+    *) echo "Others" ;;
+  esac
+}
+
+organize_uploader_dir() {
+  local uploader_dir="$1"
+  [ -d "$uploader_dir" ] || return 0
+  shopt -s nullglob
+  for f in "$uploader_dir"/*.*; do
+    [ -f "$f" ] || continue
+    local fname="$(basename "$f")"
+    local ext="${fname##*.}"
+    local subdir
+    subdir="$(map_ext_to_subdir "$ext")"
+    mkdir -p "$uploader_dir/$subdir"
+    mv -n "$f" "$uploader_dir/$subdir/" 2>/dev/null || mv -f "$f" "$uploader_dir/$subdir/" 2>/dev/null
+  done
+  shopt -u nullglob
+}
+
+log_line() {
+  printf '%s\t%s\n' "$(timestamp)" "$1" >> "$LOG_FILE"
+}
+
+# Determine extractor name for archive & cookies
+extractor="$(yt-dlp --get-extractor --no-warnings "$URL" 2>/dev/null || echo site)"
+archive_file="$ARCHIVE_DIR/${extractor}-archive.txt"
+cookie_file="$COOKIES_DIR/${extractor}-cookies.txt"
+cookie_opt=""
+if [ -f "$cookie_file" ]; then
+  cookie_opt="--cookies \"$cookie_file\""
+fi
+
+aria_opts=""
+if command -v aria2c >/dev/null 2>&1; then
+  aria_opts='--external-downloader aria2c --external-downloader-args "-x4 -s4 -k1M"'
+fi
+
+# Build and run yt-dlp command
+cmd="yt-dlp $YTDLP_BASE_OPTS --download-archive \"$archive_file\" -o \"$YTDLP_OUTPUT_TEMPLATE\" $aria_opts $cookie_opt \"$URL\""
+start_ts="$(date +%s)"
+if eval "$cmd" >/dev/null 2>&1; then
+  end_ts="$(date +%s)"
+  dur=$((end_ts - start_ts))
+  # Attempt to find uploader name and organize files
+  uploader="$(yt-dlp --get-filename -o '%(uploader)s' --no-warnings \"$URL\" 2>/dev/null || true)"
+  if [ -n "$uploader" ]; then
+    uploader_dir="$BASE_DIR/$extractor/$uploader"
+    organize_uploader_dir "$uploader_dir"
+    log_line "OK\t$URL\t$uploader_dir\t${dur}s"
+  else
+    # fallback: try to find a recently modified dir under extractor
+    uploader_dir="$(find \"$BASE_DIR/$extractor\" -mindepth 1 -maxdepth 2 -type d -mmin -5 2>/dev/null | sort -r | head -n1 || true)"
+    [ -n "$uploader_dir" ] && organize_uploader_dir "$uploader_dir"
+    log_line "OK\t$URL\t${uploader_dir:-$BASE_DIR}\t${dur}s"
+  fi
+  exit 0
+else
+  log_line "FAIL\t$URL"
+  exit 2
+fi
+WORKER_EOF
+
+# Replace placeholders in the worker script with actual paths and opts
+sed -i "s|__BASE_DIR__|$BASE_DIR|g" "$WORKER_SCRIPT"
+sed -i "s|__ARCHIVE_DIR__|$ARCHIVE_DIR|g" "$WORKER_SCRIPT"
+sed -i "s|__COOKIES_DIR__|$COOKIES_DIR|g" "$WORKER_SCRIPT"
+sed -i "s|__LOG_FILE__|$LOG_FILE|g" "$WORKER_SCRIPT"
+# Safely escape YTDLP_OUTPUT_TEMPLATE and YTDLP_BASE_OPTS for insertion
+escaped_template="$(printf '%s' "$YTDLP_OUTPUT_TEMPLATE" | sed 's|[&]|\\&|g')"
+escaped_opts="$(printf '%s' "$YTDLP_BASE_OPTS" | sed 's|[&]|\\&|g')"
+sed -i "s|__YTDLP_OUTPUT_TEMPLATE__|$escaped_template|g" "$WORKER_SCRIPT"
+sed -i "s|__YTDLP_BASE_OPTS__|$escaped_opts|g" "$WORKER_SCRIPT"
+sed -i "s|__DEFAULT_TIMEOUT__|$DEFAULT_TIMEOUT|g" "$WORKER_SCRIPT"
+
+chmod +x "$WORKER_SCRIPT"
+
+# ---- Argument parsing for main script
+CONCURRENCY=""
+DRY_RUN=0
+CUSTOM_URL_FILE=""
+
+usage() {
+  cat <<USAGE
+Usage: $0 [-j concurrency] [-f url_file] [-n] [-h]
+  -j N    set parallel jobs (default: cores*2, min 2)
+  -f FILE specify URLs file (default: $URL_FILE)
+  -n      dry run (prints planned settings and exits)
+  -h      show this help
+USAGE
+  exit 1
+}
+
+while getopts ":j:f:nh" opt; do
+  case $opt in
+    j) CONCURRENCY="$OPTARG" ;;
+    f) CUSTOM_URL_FILE="$OPTARG" ;;
+    n) DRY_RUN=1 ;;
+    h) usage ;;
+    *) usage ;;
+  esac
+done
+shift $((OPTIND-1))
+
+# Resolve URL file
+if [ -n "$CUSTOM_URL_FILE" ]; then
+  URL_FILE="$CUSTOM_URL_FILE"
+fi
+
+[ -f "$URL_FILE" ] || err_and_exit "URLs file not found: $URL_FILE"
+
+# Determine concurrency if not set
+if [ -z "$CONCURRENCY" ]; then
+  cores="$(detect_cores)"
+  CONCURRENCY=$(( cores * 2 ))
+  if [ "$CONCURRENCY" -lt "$MIN_CONCURRENCY" ]; then CONCURRENCY="$MIN_CONCURRENCY"; fi
+fi
+
+# Dry run prints what will be executed
+if [ "$DRY_RUN" -eq 1 ]; then
+  printf 'DRY RUN\n'
+  printf 'Worker script: %s\n' "$WORKER_SCRIPT"
+  printf 'URLs file: %s\n' "$URL_FILE"
+  printf 'Concurrency: %s\n' "$CONCURRENCY"
+  printf 'Base dir: %s\n' "$BASE_DIR"
+  printf 'Log file: %s\n' "$LOG_FILE"
+  printf 'yt-dlp opts: %s\n' "$YTDLP_BASE_OPTS"
+  exit 0
+fi
+
+# Run parallel using worker script
+printf '%s\tSTART\tconcurrency=%s\n' "$(timestamp)" "$CONCURRENCY" >> "$LOG_FILE"
+parallel --jobs "$CONCURRENCY" --no-notice "$WORKER_SCRIPT" {} :::: "$URL_FILE"
+printf '%s\tEND\n' "$(timestamp)" >> "$LOG_FILE"
+
+exit 0
+

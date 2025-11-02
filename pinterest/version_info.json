@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+"""
+Pinterest Automation Version Manager
+Helper script to manage different versions of the automation script
+"""
+
+import json
+from pathlib import Path
+from datetime import datetime
+
+BASE_DIR = Path("/data/data/com.termux/files/home/kh-scripts/pinterest")
+BACKUP_DIR = BASE_DIR / "backup"
+
+def list_script_versions():
+    """List all available script versions in the backup directory"""
+    print("📚 Available Script Versions:")
+    print("=" * 50)
+    
+    scripts = []
+    for file_path in BACKUP_DIR.glob("pinterest_automation_*.py"):
+        # Extract version from filename
+        filename = file_path.stem
+        if "backup" in filename:
+            continue
+            
+        version_part = filename.replace("pinterest_automation_", "")
+        if version_part.startswith("v"):
+            version = version_part
+            scripts.append({
+                'file': file_path,
+                'version': version,
+                'size': file_path.stat().st_size,
+                'modified': datetime.fromtimestamp(file_path.stat().st_mtime)
+            })
+    
+    # Sort by version (simple string sort for semantic versioning)
+    scripts.sort(key=lambda x: x['version'], reverse=True)
+    
+    for script in scripts:
+        print(f"🔹 {script['version']:10} | {script['modified'].strftime('%Y-%m-%d %H:%M')} | {script['size']:8} bytes")
+        print(f"   📁 {script['file']}")
+        print()
+    
+    return scripts
+
+def get_current_version():
+    """Get the current script version"""
+    current_script = Path(__file__).parent / "pinterest_automation.py"
+    if current_script.exists():
+        # Try to extract version from the file
+        with open(current_script, 'r') as f:
+            content = f.read()
+            if '__version__' in content:
+                for line in content.split('\n'):
+                    if '__version__' in line and '=' in line:
+                        version = line.split('=')[1].strip().strip('"\'')
+                        return version
+    return "unknown"
+
+def create_version_info():
+    """Create version information file"""
+    version_info = {
+        'current_version': get_current_version(),
+        'base_directory': str(BASE_DIR),
+        'backup_directory': str(BACKUP_DIR),
+        'last_updated': datetime.now().isoformat(),
+        'available_versions': []
+    }
+    
+    # Save to file
+    info_file = BASE_DIR / "version_info.json"
+    with open(info_file, 'w') as f:
+        json.dump(version_info, f, indent=2)
+    
+    print(f"✓ Version info saved to: {info_file}")
+    return info_file
+
+if __name__ == "__main__":
+    print("🔄 Pinterest Automation Version Manager")
+    print("=" * 50)
+    
+    # Ensure directories
+    BASE_DIR.mkdir(exist_ok=True)
+    BACKUP_DIR.mkdir(exist_ok=True)
+    
+    # List versions
+    list_script_versions()
+    
+    # Show current version
+    current = get_current_version()
+    print(f"📋 Current version: {current}")
+    
+    # Create version info
+    info_file = create_version_info()
+    print(f"💾 Version info: {info_file}")

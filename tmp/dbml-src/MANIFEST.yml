@@ -1,0 +1,14 @@
+name: dbml
+version: 1.0.0
+description: "Database Mini Library — sample"
+maintainer: "you <you@example.com>"
+license: MIT
+exports:
+  - dbml::init
+  - dbml::connect
+files:
+  - dbml.sh
+  - demos/connect-demo.sh
+  - tests/smoke.sh
+notes:
+  - skeleton: dbml minimal

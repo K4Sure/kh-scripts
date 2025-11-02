@@ -1,0 +1,393 @@
+# ~/.bashrc - Minimal Professional Configuration with Stable Neon Prompt and CML
+
+# =======================
+# PREVENT DOUBLE SOURCING
+# =======================
+if [ -n "$BASHRC_LOADED" ]; then
+    return
+fi
+export BASHRC_LOADED=1
+
+# =====================
+# ENVIRONMENT VARIABLES
+# =====================
+export PATH="$HOME/kh-scripts:$PATH"
+export HISTSIZE=10000
+export HISTFILESIZE=20000
+export HISTCONTROL=ignoreboth:erasedups
+export EDITOR='nano'
+export VISUAL='nano'
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# KH Scripts Library Paths
+export KH_SCRIPTS_DIR="$HOME/kh-scripts"
+export KH_LIBRARY_DIR="$HOME/kh-scripts/library/colors"
+
+export PATH="$PATH:$HOME/kh-scripts/universal-backup"
+
+# Add SBM command
+export PATH="$PATH:/data/data/com.termux/files/home/kh-scripts/universal-backup"
+
+export PATH="$HOME/bin:$PATH"
+export W3MIMGDISPLAY_PATH="$PREFIX/libexec/w3m/w3mimgdisplay"
+
+# =========================================
+# TRUECOLOR RGB ANSI ESCAPE CODES (24-BIT)
+# FOREGROUND FORMAT: \033[38;2;<R>;<G>;<B>m
+# BACKGROUND FORMAT: \033[48;2;<R>;<G>;<B>m
+# =========================================
+GREEN='\033[1;38;2;0;255;0m'
+LEAF_GREEN='\033[1;38;2;40;230;40m'
+DARK_GREEN='\033[1;38;2;0;100;0m'
+PURPLE='\033[1;38;2;140;80;255m'
+LIGHT_PURPLE='\033[1;38;2;220;110;200m'
+LIGHT_BROWN='\033[1;38;2;181;101;29m'
+MAROON='\033[1;38;2;230;60;0m'
+RED='\033[1;38;2;255;0;0m'
+MAGENTA='\033[1;38;2;255;0;255m'
+PINK='\033[1;38;2;255;0;255m'
+DARK_BLUE='\033[1;38;2;0;0;139m'
+NAVY_BLUE='\033[1;38;2;0;0;128m'
+BLUE='\033[1;38;2;0;135;255m'
+SKY_BLUE='\033[1;38;2;135;206;255m'
+LIGHT_BLUE='\033[1;38;2;173;216;230m'
+CYAN='\033[1;38;2;0;255;255m'
+ORANGE='\033[1;38;2;255;165;0m'
+BRIGHT_ORANGE='\033[1;38;2;255;150;0m'
+DARK_YELLOW='\033[1;38;2;204;153;0m'
+YELLOW='\033[1;38;2;255;255;0m'
+CREAM='\033[1;38;2;255;253;208m'
+WHITE='\033[1;38;2;255;255;255m'
+GRAY='\033[1;38;2;168;168;168m'
+SILVER='\033[1;38;2;192;192;192m'
+
+# TEXT STYLE MODIFIERS
+BOLD='\033[1m'
+DIM='\033[2m'
+UNDERLINE='\033[4m'
+ITALIC='\033[3m'
+INVERT='\033[7m'
+RESET='\033[0m'
+
+LINE=$(printf '%0.s=' {1..64})
+
+# =======================
+# PERMANENT CUSTOM PROMPT
+# =======================
+# Using direct color codes in PS1 to ensure they work on Termux restart
+PS1="\[\033[1;38;2;255;255;0m\]\$( [ \"\$PWD\" = \"\$HOME\" ] && echo \"~\" || basename \"\$PWD\" )\[\033[0m\] \[\033[1;38;2;0;255;0m\]\$ \[\033[0m\]"
+
+# =================
+# ESSENTIAL ALIASES
+# =================
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias ~='cd ~'
+alias l='eza -a --group-directories-first --grid'
+alias la='eza -a --group-directories-first --long'
+alias c='clear'
+alias h='history'
+alias pkgup='tupdate'
+alias storage="cd /storage/emulated/0"
+alias ii='pwd'
+alias nn='nano -c'
+alias xx='chmod +x'
+alias tss='termux-setup-storage'
+alias ebash="nano -c ~/.bashrc"
+alias rebash='unset BASHRC_LOADED && source ~/.bashrc && clear && printf "${GREEN}✔ BASHRC RELOADED & SCREEN CLEARED.${RESET}\n"'
+alias etmux="nano -c ~/.termux/termux.properties"
+alias trs='termux-reload-settings'
+alias cdkh="cd $HOME/kh-scripts"
+alias cdcml="cd $HOME/kh-scripts/library/colors"
+alias ccc="$HOME/kh-scripts/ccccc"
+alias org="bash $HOME/kh-scripts/file_organizer/file_organizer_v2.7.0.sh"
+alias pdld="$HOME/kh-scripts/library/parallel/parallel-download.sh"
+alias dm="bash $HOME/kh-scripts/ytdl_menu/dm-launcher.sh"
+alias cf="bash $HOME/kh-scripts/create_folders.sh"
+alias rth="$HOME/kh-scripts/regen_thumbs.sh"
+alias tcs="bash $HOME/kh-scripts/truecolor-spectrum.sh"
+alias mco="python $HOME/kh-scripts/media_convert.py"
+
+# ================================================
+# VIRUSTOTAL POWERSCANNER (AUTO-VERSION DETECTION)
+# ================================================
+vt() {
+    local script_dir="$HOME/kh-scripts/virustotal"
+    local powerscanner=""
+
+    # Auto-detect highest version of detailed scanner
+    powerscanner=$(find "$script_dir" -name "detailed_apk_scanner_v*.py" | sort -V | tail -n1)
+
+    if [ -n "$powerscanner" ]; then
+        local version=$(echo "$powerscanner" | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+')
+        printf "\n"
+        printf "${BLUE}🚀 LAUNCHING VIRUSTOTAL POWERSCANNER $version${RESET}\n"
+        python "$powerscanner" "$@"
+    else
+        printf "${RED}❌ ERROR: NO POWERSCANNER FOUND IN $script_dir${RESET}\n"
+        printf "${YELLOW}💡 AVAILABLE SCANNERS:${RESET}\n"
+        find "$script_dir" -name "*.py" -not -path "*/backup/*" | while read script; do
+            printf "   • $script\n"
+        done
+        return 1
+    fi
+}
+
+# Helper aliases
+alias cdvt="cd $HOME/kh-scripts/virustotal"
+alias vt-list="find $HOME/kh-scripts/virustotal -name 'detailed_apk_scanner_v*.py' | sort -V"
+
+# =============================================
+# PINTEREST DOWNLOADER (AUTO-VERSION DETECTION)
+# =============================================
+ptdl() {
+    local script_dir="$HOME/kh-scripts/pinterest"
+    local latest_script=""
+
+    # Auto-detect highest version of pinterest automation script
+    latest_script=$(find "$script_dir" -name "pinterest_automation_v*.py" -not -path "*/backup/*" | sort -V | tail -n1)
+
+    if [ -n "$latest_script" ]; then
+        local version=$(echo "$latest_script" | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+' | head -n1)
+
+        # Only show banner for main functionality, not for list/backup commands
+        if [[ "$1" != "--list-scripts" && "$1" != "--backup-scripts" && "$1" != "--multi-dl" ]]; then
+            printf "\n"
+            printf "${BLUE}🚀 LAUNCHING PINTEREST DOWNLOADER $version${RESET}\n"
+            printf "\n"
+            printf "${YELLOW}📜 SCRIPT: $(basename "$latest_script")${RESET}\n"
+        fi
+
+        python "$latest_script" "$@"
+    else
+        printf "\n"
+        printf "${RED}❌ ERROR: NO PINTEREST AUTOMATION SCRIPTS FOUND!${RESET}\n"
+        printf "${YELLOW}💡 AVAILABLE SCRIPTS:${RESET}\n"
+        find "$script_dir" -name "*.py" -not -path "*/backup/*" | while read script; do
+            printf "   • $(basename "$script")\n"
+            printf "\n"
+        done
+        return 1
+    fi
+}
+
+# PINTEREST DOWNLOADER ALIASES
+# Download Commands
+alias ptdl-cookies='ptdl --cookies'
+alias ptdl-multi='ptdl --multi-dl --cookies'
+
+# Authentication
+alias ptdl-upcookies='ptdl --update-cookies'
+
+# Script Management
+alias ptdl-list='ptdl --list-scripts'
+alias ptdl-backup='ptdl --backup-scripts'
+
+# Navigation
+alias cdpt="cd $HOME/kh-scripts/pinterest"
+
+# Pinterest Downloader Help - Complete Command Reference
+ptdl-help() {
+    printf "\n"
+    printf '%s\n' "$LINE"
+    printf "${BOLD}${RED}        📌 PINTEREST MULTI-INSTANCES DOWNLOADER${RESET}\n"
+    printf "${BOLD}${PINK}        📜 THE COMPLETE COMMANDS & ALIASES REFERENCE${RESET}\n"
+    printf '%s\n' "$LINE"
+    printf "\n"
+    printf "${YELLOW}📥 DOWNLOAD COMMANDS:${RESET}\n"
+    printf "   ${BOLD}🌐 ptdl ${PURPLE}URL1 ${PINK}URL2 ${LIGHT_PURPLE}URL3 ${RESET}${BOLD}..... →${RESET} ${YELLOW}Download Pinterest URLs${RESET}\n"
+    printf "   ${BOLD}🍪 ptdl-cookies ${PURPLE}URL1 ${PINK}URL2 ${LIGHT_PURPLE}URL3 ${RESET}${BOLD}..... →${RESET} ${YELLOW}Download With Cookies${RESET}\n"
+    printf "   ${BOLD}🔢 ptdl-multi →${RESET} ${YELLOW}Multi-Instance Downloader (Auto CSV + Cookies)${RESET}\n"
+    printf "\n"
+    printf "${BOLD}${BRIGHT_ORANGE}🔐 AUTHENTICATION:${RESET}\n"
+    printf "   ${BOLD}🍪 ptdl-upcookies →${RESET} ${BOLD}${BRIGHT_ORANGE}Update Cookies Interactively${RESET}\n"
+    printf "\n"
+    printf "${CYAN}📜 SCRIPT MANAGEMENT:${RESET}\n"
+    printf "   ${BOLD}🧭 cdpt →${RESET} ${CYAN}Navigate To Script Directory${RESET}\n"
+    printf "   ${BOLD}🧾 ptdl-list →${RESET} ${CYAN}List All Script Versions${RESET}\n"
+    printf "   ${BOLD}💾 ptdl-backup →${RESET} ${CYAN}Backup Scripts & Remove Old Versions${RESET}\n"
+    printf "\n"
+    printf "${BOLD}${MAROON}🆘 HELP ➕ INFO 💬:${RESET}\n"
+    printf "   ${BOLD}❓ ptdl-help →${RESET} ${BOLD}${MAROON}Show This Alias Reference${RESET}\n"
+    printf "   ${BOLD}❔ ptdl --help →${RESET} ${BOLD}${MAROON}Show Original ptdl help${RESET}\n"
+    printf "\n"
+    printf "${BOLD}${SKY_BLUE}🌏 DIRECTORIES:${RESET}\n"
+    printf "   ${BOLD}📸 Photos    :${RESET} ${SKY_BLUE}~~~/ptdl Photos${RESET}\n"
+    printf "   ${BOLD}🎬 Videos    :${RESET} ${SKY_BLUE}~~~/ptdl Videos${RESET}\n"
+    printf "   ${BOLD}📝 Logs      :${RESET} ${SKY_BLUE}~~~/ptdl logs${RESET}\n"
+    printf "   ${BOLD}🔗 URLs      :${RESET} ${SKY_BLUE}~~~/ptdl urls/pinterest_urls.txt${RESET}\n"
+    printf "   ${BOLD}📑 Multi CSV :${RESET} ${SKY_BLUE}~~~/ptdl urls/pinterest_multi-dl_urls.csv${RESET}\n"
+    printf "   ${BOLD}📜 Scripts   :${RESET} ${SKY_BLUE}~/kh-scripts/pinterest/${RESET}\n"
+    printf "\n"
+    printf "${BOLD}${LEAF_GREEN}🪄 TIPS:${RESET}\n"
+    printf "   ${BOLD}${LEAF_GREEN}🔸 Use ${BOLD}${CREAM}ptdl-multi${RESET} ${BOLD}${LEAF_GREEN}For Batch Downloads From CSV${RESET}\n"
+    printf "   ${BOLD}${LEAF_GREEN}🔸 Add URLs To ${BOLD}${CREAM}pinterest_urls.txt${RESET} ${BOLD}${LEAF_GREEN}For Quick Access${RESET}\n"
+    printf "   ${BOLD}${LEAF_GREEN}🔸 Use ${BOLD}${CREAM}ptdl-upcookies${RESET} ${BOLD}${LEAF_GREEN}For Private Boards${RESET}\n"
+    printf "   ${BOLD}${LEAF_GREEN}🔸 Script ${BOLD}${CREAM}Auto-Updates${RESET} ${BOLD}${LEAF_GREEN}To The Latest Version Automatically${RESET}\n"
+    printf "\n"
+}
+
+# ===================
+# ESSENTIAL FUNCTIONS
+# ===================
+mcd() { mkdir -p "$1" && cd "$1"; }
+
+battery() { termux-battery-status 2>/dev/null | grep -o '"percentage":[^,]*' | cut -d: -f2 || printf "N/A\n"; }
+
+backup() { cp "$1" "$1.bak"; printf "BACKUP CREATED: $1.bak\n"; }
+
+help() {
+    printf "${YELLOW}🧰 ESSENTIAL COMMANDS:${RESET}\n"
+    printf "mcd <dir>    → CREATE & ENTER DIRECTORY\n"
+    printf "battery      → CHECK BATTERY LEVEL\n"
+    printf "pkgup        → UPDATE PACKAGES\n"
+    printf "storage      → GO TO INTERNAL STORAGE\n"
+    printf "help         → SHOW THIS HELP\n"
+}
+
+# ====================
+# HISTORY ENHANCEMENTS
+# ====================
+shopt -s histappend
+shopt -s cmdhist
+PROMPT_COMMAND='history -a'
+
+# ===================
+# SILENT STARTUP FLAG
+# ===================
+if [ -z "$WELCOME_SHOWN" ]; then
+    export WELCOME_SHOWN=1
+fi
+
+# ====================
+# AUTO-UPDATE REMINDER
+# ====================
+LAST_UPDATE_FILE="$HOME/.last_update"
+TODAY=$(date +%F)
+if [ -f "$LAST_UPDATE_FILE" ]; then
+    LAST_UPDATE=$(cat "$LAST_UPDATE_FILE")
+    if [ "$LAST_UPDATE" != "$TODAY" ]; then
+        printf "${YELLOW}💡 RUN 'pkgup' TO UPDATE PACKAGE (LAST UPDATE: $LAST_UPDATE)${RESET}\n"
+    fi
+fi
+
+# =========================================
+# COLOR MASTER LIBRARY (CML) + GLOBAL THEME
+# =========================================
+# Load global scripts theme (applies to all libraries)
+if [ -f "$HOME/kh-scripts/library/colors/global-scripts-theme.sh" ]; then
+    source "$HOME/kh-scripts/library/colors/global-scripts-theme.sh"
+fi
+
+# Load CML Init (handles core, TrueColor, shortcuts, aliases, theme)
+if [ -f "$HOME/kh-scripts/library/colors/cml-init.sh" ]; then
+    source "$HOME/kh-scripts/library/colors/cml-init.sh"
+fi
+
+# Load CML Core
+if [ -f "$CML_DIR/cml.sh" ]; then
+    source "$CML_DIR/cml.sh"
+fi
+
+# Load CML TrueColor Engine
+if [ -f "$CML_DIR/cml-truecolor.sh" ]; then
+    source "$CML_DIR/cml-truecolor.sh"
+fi
+
+# Load CML Shortcuts
+if [ -f "$CML_DIR/cml-shortcuts.sh" ]; then
+    source "$CML_DIR/cml-shortcuts.sh"
+fi
+
+# CML Theme Selector wrapper
+cml_theme_selector() {
+    if [ -f "$CML_DIR/cml_theme_v4.6.0.sh" ]; then
+        bash "$CML_DIR/cml_theme_v4.6.0.sh"
+    else
+        echo "❌ THEME SCRIPT NOT FOUND"
+    fi
+}
+
+# CML TrueColor preview wrapper
+cml_tht() {
+    if [ -f "$CML_DIR/cml-truecolor-preview.sh" ]; then
+        bash "$CML_DIR/cml-truecolor-preview.sh" "$@"
+    else
+        echo "❌ TRUECOLOR PREVIEW SCRIPT NOT FOUND"
+    fi
+}
+
+# ==========================================
+# CML COMMAND WRAPPER (SUPPORTS SUBCOMMANDS)
+# ==========================================
+cml() {
+    local cmd="$1"
+    shift
+    case "$cmd" in
+        info)
+            cml_info
+            ;;
+        cheat)
+            if declare -f cml_cheat >/dev/null 2>&1; then
+                cml_cheat "$@"
+            else
+                echo "❌ CHEAT FUNCTION NOT FOUND"
+            fi
+            ;;
+        demo)
+            if declare -f cml_demo >/dev/null 2>&1; then
+                cml_demo "$@"
+            else
+                echo "❌ DEMO FUNCTION NOT FOUND"
+            fi
+            ;;
+        test)
+            if [ -f "$CML_DIR/cml-test.sh" ]; then
+                bash "$CML_DIR/cml-test.sh" "$@"
+            else
+                echo "❌ TEST SCRIPT NOT FOUND"
+            fi
+            ;;
+        load)
+            # Reload CML environment
+            source "$CML_DIR/cml.sh"
+            source "$CML_DIR/cml-shortcuts.sh"
+            echo "♻ CML RELOADED"
+            ;;
+        theme)
+            cml_theme_selector "$@"
+            ;;
+        tht)
+            cml_tht "$@"
+            ;;
+        "")   # default: show menu
+            if declare -f cml_info >/dev/null 2>&1; then
+                cml_info
+            fi
+            ;;
+        *)    # unknown subcommand → forward to shortcuts
+            if declare -f cml_shortcut_forward >/dev/null 2>&1; then
+                cml_shortcut_forward "$cmd" "$@"
+            else
+                echo "❌ UNKNOWN COMMAND: $cmd"
+                cml_info
+            fi
+            ;;
+    esac
+}
+
+# Optional: display TrueColor support on shell start
+if command -v cml_truecolor_supported >/dev/null 2>&1 && cml_truecolor_supported; then
+    printf '%b\n' "$(rgb_fg 0 255 255)🎯 TRUECOLOR SUPPORTED$(cml_reset)"
+else
+    printf '%b\n' "🚨 TRUECOLOR NOT SUPPORTED, FALLBACK ACTIVE 🚨"
+fi
+
+# ==================
+# START-UP DIRECTORY
+# ==================
+# Change Directory
+cd "$HOME/kh-scripts"
+alias r='/data/data/com.termux/files/home/bin/ranger-global'

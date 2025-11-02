@@ -1,0 +1,77 @@
+#!/data/data/com.termux/files/usr/bin/python
+# ===============================================
+# UNIVERSAL SMART BACKUP SCRIPT (v1.1.0-universal)
+# PYTHON EDITION FOR TERMUX (COMMAND VERSION)
+# Supports FILE + DIRECTORY backup
+# ===============================================
+import sys, os, re, shutil, tarfile
+from datetime import datetime
+
+BACKUP_DIR = "/data/data/com.termux/files/home/kh-scripts/backup"
+
+def detect_version(path):
+    """Scan file content for version string like v1.2.3 or v4.3.0-themeguard."""
+    try:
+        if os.path.isfile(path):
+            with open(path, "rb") as f:
+                data = f.read().decode("utf-8", "ignore")
+            match = re.search(r"v\d+(?:\.\d+)*(?:-[A-Za-z0-9._-]+)?", data)
+            if match:
+                return match.group(0)
+    except Exception:
+        pass
+    return "v0.0.0"
+
+def timestamp():
+    """Generate timestamp in YYYYMMDD_HHMMSS."""
+    return datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def backup_file(src):
+    """Backup a single file."""
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    base = os.path.basename(src)
+    name, ext = os.path.splitext(base)
+    ver = detect_version(src)
+    ts = timestamp()
+    dest_name = f"{name}_{ver}_{ts}{ext or '.sh'}"
+    dest_path = os.path.join(BACKUP_DIR, dest_name)
+    try:
+        shutil.copy2(src, dest_path)
+        print(f"✔ FILE BACKED UP: {dest_name}")
+    except Exception as e:
+        print(f"❌ FAILED TO BACKUP FILE {src}: {e}")
+
+def backup_directory(src):
+    """Backup an entire directory as tar.gz archive."""
+    os.makedirs(BACKUP_DIR, exist_ok=True)
+    base = os.path.basename(os.path.abspath(src.rstrip('/')))
+    ver = detect_version(os.path.join(src, "__init__.py")) or "v0.0.0"
+    ts = timestamp()
+    dest_name = f"{base}_{ver}_{ts}.tar.gz"
+    dest_path = os.path.join(BACKUP_DIR, dest_name)
+    try:
+        with tarfile.open(dest_path, "w:gz") as tar:
+            tar.add(src, arcname=base)
+        print(f"✔ DIRECTORY BACKED UP: {dest_name}")
+    except Exception as e:
+        print(f"❌ FAILED TO BACKUP DIRECTORY {src}: {e}")
+
+def make_backup(path):
+    """Detect type and backup accordingly."""
+    if os.path.isfile(path):
+        backup_file(path)
+    elif os.path.isdir(path):
+        backup_directory(path)
+    else:
+        print(f"❌ PATH NOT FOUND: {path}")
+
+def main():
+    if len(sys.argv) < 2:
+        print("USAGE: smart-backup <file_or_dir1> [file_or_dir2 ...]")
+        sys.exit(1)
+    for path in sys.argv[1:]:
+        make_backup(path)
+    print("✔ ALL BACKUPS COMPLETED.")
+
+if __name__ == "__main__":
+    main()

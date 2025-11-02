@@ -1,0 +1,32 @@
+== CSML Integrated Demo ==
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 14: cml_yellow: command not found
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+Single: ┌──┐ │  │ └──┘
+Double: ╔══╗ ║  ║ ╚══╝
+Rounded: ╭──╮ │  │ ╰──╯
+
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+All: ↑ ↓ ← → ↔ ↕
+
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+All: ░ ▒ ▓ █ ▀ ▄ ▌ ▐
+
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+All: ● ○ ◯ ▲ ▼ ◀ ▶ ◆ ◇ ★ ☆ ✦ ✧
+
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+All: $ € £ ¥ ₩ ₿
+
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+All: ± × ÷ = ≠ ≤ ≥ ∞ √ π
+
+/data/data/com.termux/files/home/kh-scripts/library/symbols/symbols-demo.sh: line 24: cml_cyan: command not found
+
+All: • ‣ ⁃ ◦
+
