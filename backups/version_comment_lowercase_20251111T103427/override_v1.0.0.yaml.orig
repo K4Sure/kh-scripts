@@ -1,8 +1,7 @@
-# version: 1.0.0
 version: 1.0.0
 # Version: 1.0.0
 # Branded Theme (audit: 20251111T101656)
-name: edge_base
+name: override
 palette:
-  x: "#010101"
-  y: " #020202 "
+  b: "#222222"
+  c: "#333333"
