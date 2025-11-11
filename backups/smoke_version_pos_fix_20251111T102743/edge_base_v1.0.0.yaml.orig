@@ -1,7 +1,7 @@
 # Version: 1.0.0
 # Branded Theme (audit: 20251111T101656)
-version: 1.0.0
 name: edge_base
+version: 1.0.0
 palette:
   x: "#010101"
   y: " #020202 "

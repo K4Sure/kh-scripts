@@ -1,7 +1,7 @@
 # Version: 1.0.0
 # Branded Theme (audit: 20251111T101656)
-name: override
 version: 1.0.0
+name: override
 palette:
   b: "#222222"
   c: "#333333"
