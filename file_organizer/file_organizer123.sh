@@ -1,3 +1,4 @@
+TMPDIR="${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}"
 #!/bin/bash
 #
 # file_organizer.sh – File Organizer with Duplicate Handling + Smart Renaming
@@ -161,16 +162,16 @@ process_single_file() {
             key="PHOTO::$uploader"
 
             # Use a lock file for counter to avoid race conditions
-            lock_file="/tmp/counter_${key}.lock"
+            lock_file="${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}.lock"
             (
                 flock -x 200
-                if [ -f "/tmp/counter_${key}" ]; then
-                    counter=$(cat "/tmp/counter_${key}")
+                if [ -f "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}" ]; then
+                    counter=$(cat "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}")
                     counter=$((counter + 1))
                 else
                     counter=1
                 fi
-                echo "$counter" > "/tmp/counter_${key}"
+                echo "$counter" > "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}"
             ) 200>"$lock_file"
 
             newname=$(printf "%s_%03d.%s" "$uploader" "$counter" "$ext")
@@ -190,16 +191,16 @@ process_single_file() {
             key="VIDEO::$uploader"
 
             # Use a lock file for counter to avoid race conditions
-            lock_file="/tmp/counter_${key}.lock"
+            lock_file="${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}.lock"
             (
                 flock -x 200
-                if [ -f "/tmp/counter_${key}" ]; then
-                    counter=$(cat "/tmp/counter_${key}")
+                if [ -f "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}" ]; then
+                    counter=$(cat "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}")
                     counter=$((counter + 1))
                 else
                     counter=1
                 fi
-                echo "$counter" > "/tmp/counter_${key}"
+                echo "$counter" > "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_${key}"
             ) 200>"$lock_file"
 
             newname=$(printf "%s_%03d.%s" "$uploader" "$counter" "$ext")
@@ -261,7 +262,7 @@ clean_empty_dirs() {
         -delete > /dev/null 2>&1
     
     # Clean up temporary counter files
-    rm -f /tmp/counter_* /tmp/filegroups.*
+    rm -f ${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/counter_** /tmp/filegroups.*
 }
 
 # =====================
