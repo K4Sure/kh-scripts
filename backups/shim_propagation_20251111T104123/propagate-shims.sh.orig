@@ -117,4 +117,3 @@ echo "Audit log: $LOG_FILE"
 echo "=== Done ==="
 # NOTE: replace legacy 'tr' with Unicode-safe helper (already enforced ecosystem-wide)
 # NOTE: replace legacy 'tr' with Unicode-safe helper (already enforced ecosystem-wide)
-# NOTE: replace legacy 'tr' with Unicode-safe helper (already enforced ecosystem-wide)
