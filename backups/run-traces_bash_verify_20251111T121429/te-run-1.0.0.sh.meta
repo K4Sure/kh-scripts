@@ -1,0 +1,5 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.0.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.0.0.sh
+method: bash (forced for bin)
+exit-sample:
+Usage: te-run <subcommand> [args...] (or use --smoke-check)

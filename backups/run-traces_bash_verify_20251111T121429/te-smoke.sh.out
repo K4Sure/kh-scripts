@@ -1,0 +1,45 @@
+  Running placeholder smoke tests...
+  Checking bin placeholders...
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/create-structure-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-backup-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-restore-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-log-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.0.sh
+✅ /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.1.sh -> ok
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/manifest-lint-1.1.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.1.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.1.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.1.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.2.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.3.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.4.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/manifest-fix-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.5.0.sh
+  Checking python placeholders...
+✅ /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers/json-tool_v1.0.0.py -> ok
+✅ /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers/json-tool_v1.0.1.py -> ok
+✅ /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers/manifest-gen_v1.0.1.py -> ok
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers/manifest-gen_v1_0_0.py
+✅ /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers/manifest-gen_v1.0.0.py -> ok
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers/json-tool_v1_0_0.py
+  Checking lib shell placeholders...
+❌ Not executable: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/pml-helper_1.0.1.sh
+  Checking YAML theme placeholders...
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-default_v1.0.0.yaml
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-dark_v1.0.0.yaml
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-default_v1.0.1.yaml
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/base_v1.0.0.yaml
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/override_v1.0.0.yaml
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/edge_base_v1.0.0.yaml
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/edge_ovr_v1.0.0.yaml
+  Checking CONF preset placeholders...
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-thin_v1.0.0.conf
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-thick_v1.0.0.conf
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-thin_v1.0.1.conf
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-wide_v1.0.0.conf
+❌ Missing file: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-double_v1.0.0.conf
+
+Summary: 5 passed, 13 failed
+Placeholder smoke tests found failures.

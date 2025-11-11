@@ -1,0 +1,5 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/manifest-fix-1.0.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/manifest-fix-1.0.0.sh
+method: exec (executable)
+exit-sample:
+manifest-fix: done

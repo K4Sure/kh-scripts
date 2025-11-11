@@ -1,0 +1,7 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/manifest-lint-1.1.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/manifest-lint-1.1.0.sh
+method: bash (forced for bin)
+exit-sample:
+manifest-lint v1.1.0 running...
+
+MANIFEST LINT: OK

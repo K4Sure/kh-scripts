@@ -1,0 +1,7 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.1.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.1.0.sh
+method: exec (executable)
+exit-sample:
+te-install v1.1.0: starting local install checks...
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.1.0.sh: 6: bin/manifest-lint-1.1.0.sh: not found
+te-install: manifest lint failed

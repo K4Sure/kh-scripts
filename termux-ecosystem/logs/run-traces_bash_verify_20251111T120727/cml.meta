@@ -1,0 +1,10 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/cml
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/cml
+method: bash (forced for bin)
+exit-sample:
+cml — local-first CLI
+Usage:
+  cml palette <base|edge_base|path> [override.yaml ... | -]
+  cml swatch <base|edge_base|path> [override.yaml ... | -]
+Notes:
+  - TTY: "cml palette" shows TrueColor swatches by default.

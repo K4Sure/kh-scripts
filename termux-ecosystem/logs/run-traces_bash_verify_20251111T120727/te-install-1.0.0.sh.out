@@ -1,0 +1,2 @@
+→ te-install: starting
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.0.0.sh: line 10: '/dev/null': No such file or directory

@@ -1,0 +1,5 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.0.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.0.0.sh
+method: exec (executable)
+exit-sample:
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-install-1.0.0.sh: 3: set: Illegal option -o pipefail

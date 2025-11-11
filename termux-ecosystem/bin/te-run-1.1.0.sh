@@ -1,16 +1,22 @@
 # Branded Shim Wrapper
 #!/usr/bin/env sh
+
+# Auto-inserted script dir resolver for robust helper invocation
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)
+export SCRIPT_DIR
+# __KH_SCRIPT_DIR_INSERTED__ (marker removed)
 # te-run v1.1.0 - runner that executes full smoke checks, fails fast with codes
 set -e
 case "$1" in
   --smoke-check)
     echo "te-run: running manifest linter..."
-    if ! bin/manifest-lint-1.1.0.sh; then
-      echo "te-run: manifest lint failed" >&2
-      exit 2
-    fi
+if ! timeout 30s "$SCRIPT_DIR/manifest-lint-1.1.0.sh" "$@"; then
+  echo "te-run: manifest-lint timed out or failed after 30s"
+  echo "te-run: manifest lint failed" >&2
+  exit 2
+fi
     echo "te-run: running lib smoke..."
-    if ! bin/te-lib-smoke-1.5.0.sh; then
+    if ! $SCRIPT_DIR/te-lib-smoke-1.5.0.sh; then
       echo "te-run: lib smoke failed" >&2
       exit 3
     fi

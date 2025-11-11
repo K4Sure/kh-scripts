@@ -1,0 +1,12 @@
+CI local run: 20251111T1214 (Asia/Kuala_Lumpur)
+
+=== MANIFEST LINT ===
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/ci-local.sh: line 11: bin/manifest-lint-1.1.0.sh: No such file or directory
+manifest-lint: non-zero exit
+
+=== MANIFEST FIX SUGGESTIONS ===
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/ci-local.sh: line 14: bin/manifest-fix-1.0.0.sh: No such file or directory
+
+=== RUN CML UNIT TESTS ===
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/ci-local.sh: line 17: lib/cml/tests/palette_merge_test_v0.1.0.sh: No such file or directory
+CML tests failed

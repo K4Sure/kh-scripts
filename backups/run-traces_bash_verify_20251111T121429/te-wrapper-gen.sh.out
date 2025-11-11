@@ -1,0 +1,11 @@
+\033[1mUsage:\033[0m te-wrapper-gen.sh <type> <name> <version>
+  - type: bin | sh | python | yaml | conf
+  - name: base file name without extension (e.g., pml-helper, theme-default)
+  - version: semantic version (e.g., 1.0.0)
+
+Examples:
+  te-wrapper-gen.sh bin te-preflight 1.0.0
+  te-wrapper-gen.sh sh pml-helper 1.0.0
+  te-wrapper-gen.sh python json-tool 1.0.0
+  te-wrapper-gen.sh yaml theme-default 1.0.0
+  te-wrapper-gen.sh conf box-thin 1.0.0

@@ -1,0 +1,5 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-wrapper-gen.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-wrapper-gen.sh
+method: exec (executable)
+exit-sample:
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-wrapper-gen.sh: 8: set: Illegal option -o pipefail

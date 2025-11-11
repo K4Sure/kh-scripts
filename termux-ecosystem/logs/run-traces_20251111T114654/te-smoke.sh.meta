@@ -1,0 +1,5 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-smoke.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-smoke.sh
+method: exec (executable)
+exit-sample:
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-smoke.sh: 8: set: Illegal option -o pipefail

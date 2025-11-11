@@ -1,0 +1,10 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-smoke.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-smoke.sh
+method: bash (forced for bin)
+exit-sample:
+  Running placeholder smoke tests...
+  Checking bin placeholders...
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/create-structure-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-backup-1.0.0.sh
+  Skip non-placeholder: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-restore-1.0.0.sh

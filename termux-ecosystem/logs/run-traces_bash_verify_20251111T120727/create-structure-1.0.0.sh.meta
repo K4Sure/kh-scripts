@@ -1,0 +1,10 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/create-structure-1.0.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/create-structure-1.0.0.sh
+method: bash (forced for bin)
+exit-sample:
+Creating termux-ecosystem root at: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/csml
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/wrappers

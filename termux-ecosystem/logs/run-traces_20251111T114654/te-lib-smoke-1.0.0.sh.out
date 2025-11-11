@@ -1,0 +1,7 @@
+CML palette (first 10 lines):
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.0.0.sh: 6: lib/cml/src/palette_loader_v0.1.0.sh: not found
+
+DBML box render:
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.0.0.sh: 9: lib/dbml/src/box_renderer_v0.1.0.sh: not found
+
+lib smoke v1.1.0 complete

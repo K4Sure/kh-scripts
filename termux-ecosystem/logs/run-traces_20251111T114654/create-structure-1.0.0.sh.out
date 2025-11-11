@@ -1,0 +1,346 @@
+Creating termux-ecosystem root at: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/csml
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/wrappers
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/etc
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/exports
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/banners
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/icons
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/logs/app
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups/full
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups/incremental
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/archives
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/tmp
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tests
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/examples
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/docs
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-backup-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-restore-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-log-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/cml_v1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/csml/csml_v1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/dbml_v1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/pml_v1.0.0.sh
+Creating etc and manifest/version placeholders
+Creating docs, examples and tests placeholders
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_swatch_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.2.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.bak': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.new': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.orig': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.patchbak': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.tmp': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.tmp.head': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_v0.3.0.sh.tmp.repl': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/cml_palette_wrap_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src/palette_loader_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/tests/palette_edgecases_test_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/tests/palette_lastwins_test_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/tests/palette_merge_test_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/tests/tmp': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/base_v1.0.0.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/edge_base_v1.0.0.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/edge_ovr_v1.0.0.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/override_v1.0.0.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/override_v1.0.0.yaml.bak': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-dark_v1.0.0.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-default_v1.0.0.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-default_v1.0.1.yaml': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-double_v1.0.0.conf': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-thick_v1.0.0.conf': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-thin_v1.0.0.conf': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-thin_v1.0.1.conf': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets/box-wide_v1.0.0.conf': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/src/box_preset_v0.2.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/src/box_preset_v0.2.0.sh.tmp': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/src/box_preset_v0.3.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/src/box_renderer_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/tests/wrap_align_test_v0.1.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/wrappers/dl-wrapper_v1.0.0.sh': Permission denied
+chmod: cannot access '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/wrappers/job-runner_v1.0.0.sh': Permission denied
+Structure creation complete.
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem:
+backup_git_20251111T0243.tar.gz
+backups
+bin
+docs
+etc
+examples
+lib
+log
+logs
+manifest.json
+manifests
+schema
+share
+termux-ecosystem_snapshot_20251111T0245.tar.gz
+termux-ecosystem_snapshot_20251111T0247.tar.gz
+termux-ecosystem_snapshot_20251111T0248.tar.gz
+tests
+tmp
+var
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/backups:
+cml_20251111T0357
+cml_palette_norm_wrap_v0.1.0_20251111T0354.sh
+cml_palette_norm_wrap_v0.1.0_20251111T0357.sh
+cml_palette_v0.3.0_20251111T0347.sh
+cml_palette_v0.3.0_20251111T0350.sh
+cml_palette_wrap_v0.1.0_20251111T0349.sh
+cml_palette_wrap_v0.1.0_20251111T0350.sh
+palette_edgecases_test_v0.1.0.sh_
+palette_lastwins_test_v0.1.0_20251111T0357.sh
+palette_merge_test_v0.1.0.sh_
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin:
+ci-local.sh
+cml
+create-structure-1.0.0.sh
+dev-setup.sh
+manifest-fix-1.0.0.sh
+manifest-lint-1.1.0.sh
+te-backup-1.0.0.sh
+te-gen
+te-install-1.0.0.sh
+te-install-1.1.0.sh
+te-lib-smoke-1.0.0.sh
+te-lib-smoke-1.1.0.sh
+te-lib-smoke-1.2.0.sh
+te-lib-smoke-1.3.0.sh
+te-lib-smoke-1.4.0.sh
+te-lib-smoke-1.5.0.sh
+te-log-1.0.0.sh
+te-preflight-1.0.0.sh
+te-preflight-1.0.1.sh
+te-restore-1.0.0.sh
+te-run-1.0.0.sh
+te-run-1.0.0.sh.auto.snapshot.1762792710.bak
+te-run-1.0.0.sh.pre.orch.1762793031.bak
+te-run-1.1.0.sh
+te-smoke.sh
+te-wrapper-gen.sh
+te-wrapper-gen.sh.bak
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/docs:
+API_CML.md
+API_CSML.md
+API_DBML.md
+API_PML.md
+CHANGELOG.md
+QUICKSTART.md
+palette_cli.md
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/etc:
+manifest.json
+termux-ecosystem-bashrc
+version
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/examples:
+example-deploy-1.0.0.sh
+example-downloader-1.0.0.sh
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib:
+cml
+csml
+dbml
+pml
+python-helpers
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml:
+cml_v1.0.0.sh
+src
+tests
+themes
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/src:
+cml_palette_norm_wrap_v0.1.0.sh
+cml_palette_swatch_v0.1.0.sh
+cml_palette_v0.2.0.sh
+cml_palette_v0.3.0.sh
+cml_palette_v0.3.0.sh.bak
+cml_palette_v0.3.0.sh.new
+cml_palette_v0.3.0.sh.orig
+cml_palette_v0.3.0.sh.patchbak
+cml_palette_v0.3.0.sh.tmp
+cml_palette_v0.3.0.sh.tmp.head
+cml_palette_v0.3.0.sh.tmp.repl
+cml_palette_wrap_v0.1.0.sh
+palette_loader_v0.1.0.sh
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/tests:
+palette_edgecases_test_v0.1.0.sh
+palette_lastwins_test_v0.1.0.sh
+palette_merge_test_v0.1.0.sh
+tmp
+ls: cannot open directory '/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/tests/tmp': Permission denied
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes:
+base_v1.0.0.yaml
+edge_base_v1.0.0.yaml
+edge_ovr_v1.0.0.yaml
+override_v1.0.0.yaml
+override_v1.0.0.yaml.bak
+theme-dark_v1.0.0.yaml
+theme-default_v1.0.0.yaml
+theme-default_v1.0.1.yaml
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/csml:
+csml_v1.0.0.sh
+symbols.conf
+symbols_local.conf
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml:
+dbml_v1.0.0.sh
+presets
+src
+tests
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets:
+box-double_v1.0.0.conf
+box-thick_v1.0.0.conf
+box-thin_v1.0.0.conf
+box-thin_v1.0.1.conf
+box-wide_v1.0.0.conf
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/src:
+box_preset_v0.2.0.sh
+box_preset_v0.2.0.sh.tmp
+box_preset_v0.3.0.sh
+box_renderer_v0.1.0.sh
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/tests:
+wrap_align_test_v0.1.0.sh
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml:
+pml-helper_1.0.1.sh
+pml-helper_1.0.1_pml-helper_1.0.1.sh.sh
+pml-helper_v1.0.0.sh
+pml_v1.0.0.sh
+wrappers
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/wrappers:
+dl-wrapper_v1.0.0.sh
+job-runner_v1.0.0.sh
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers:
+json-tool_v1.0.0.py
+json-tool_v1.0.1.py
+json-tool_v1_0_0.py
+manifest-gen_v1.0.0.py
+manifest-gen_v1.0.1.py
+manifest-gen_v1_0_0.py
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/log:
+te-run.log
+te-run.log.20251111T004106.gz
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/logs:
+ONBOARDING_helpers_one_liners.md
+ONBOARDING_master_commands.md
+ONBOARDING_master_commands_20251111T113030.md
+ONBOARDING_quick_copy_commands_20251111T104123.md
+ONBOARDING_shim_propagation_20251111T101211.md
+ONBOARDING_smoke_force_version_first_20251111T103027.md
+ONBOARDING_smoke_version_alignment_20251111T102307.md
+ONBOARDING_smoke_version_pos_fix_20251111T102743.md
+ONBOARDING_version_comment_lowercase_20251111T103427.md
+ONBOARDING_version_header_comment_20251111T101855.md
+ONBOARDING_version_header_comment_fix_20251111T102844.md
+ONBOARDING_version_headers_20251111T101606.md
+ONBOARDING_version_headers_20251111T101656.md
+ONBOARDING_version_keys_20251111T101749.md
+_shim_propagation_20251111T101126.log
+_shim_propagation_20251111T101211.log
+_shim_propagation_20251111T103528.log
+_shim_propagation_20251111T104123.log
+ci-local_20251111T0226.txt
+ci-local_20251111T0229.txt
+ci-local_20251111T0230.txt
+ci-local_20251111T0231.txt
+ci-local_20251111T0233.txt
+ci-local_20251111T0248.txt
+ci-local_20251111T0250.txt
+manifest-audit_20251111T0204_v1.1.0.txt
+palette-merge-audit_20251111T0215_v0.3.0.txt
+placeholder-dryrun-traces_20251111T113958
+run-traces_20251111T114654
+te-smoke-trace_20251111T103226.log
+te-smoke-trace_20251111T105643.log
+versioned-files_20251111T0229.csv
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/logs/placeholder-dryrun-traces_20251111T113958:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/logs/run-traces_20251111T114654:
+ci-local.sh.meta
+ci-local.sh.out
+cml.meta
+cml.out
+create-structure-1.0.0.sh.meta
+create-structure-1.0.0.sh.out
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/manifests:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/schema:
+manifest-schema_v1.json
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share:
+banners
+exports
+icons
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/banners:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/exports:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/icons:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tests:
+test_cml-1.0.0.sh
+test_csml-1.0.0.sh
+test_dbml-1.0.0.sh
+test_pml-1.0.0.sh
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tmp:
+cml_out.txt
+patch-palette-stdin.sh
+tests
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tmp/tests:
+palette_edgecases_test_v0.1.0.sh.log
+palette_lastwins_test_v0.1.0.sh.log
+palette_merge_test_v0.1.0.sh.log
+test_cml-1.0.0.sh.log
+test_csml-1.0.0.sh.log
+test_dbml-1.0.0.sh.log
+test_pml-1.0.0.sh.log
+wrap_align_test_v0.1.0.sh.log
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var:
+archives
+backups
+logs
+tmp
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/archives:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups:
+full
+incremental
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups/full:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups/incremental:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/logs:
+app
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/logs/app:
+
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/tmp:

@@ -1,0 +1,6 @@
+Error: wrong number of arguments
+Usage: te-gen <type> <name> <version>
+  type: bin | sh | python | yaml | conf
+  name: base file name (prefix with cml-, dbml-, pml-, bmc- when required)
+  version: semantic version (e.g., 1.0.0)
+Example: te-gen sh pml-helper 1.0.1

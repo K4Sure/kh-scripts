@@ -1,0 +1,10 @@
+cml — local-first CLI
+Usage:
+  cml palette <base|edge_base|path> [override.yaml ... | -]
+  cml swatch <base|edge_base|path> [override.yaml ... | -]
+Notes:
+  - TTY: "cml palette" shows TrueColor swatches by default.
+  - Pipe/redirect: "cml palette" outputs plain normalized pairs.
+  - Stdin overrides: pipe raw key:"#hex"; "-" auto-added when piped.
+  - Last-wins: later inputs override earlier ones.
+  - Normalized: keys lowercase; values trimmed and de-quoted.

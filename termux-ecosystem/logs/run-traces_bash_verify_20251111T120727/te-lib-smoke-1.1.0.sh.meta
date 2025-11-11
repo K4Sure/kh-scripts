@@ -1,0 +1,10 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.1.0.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.1.0.sh
+method: bash (forced for bin)
+exit-sample:
+CML palette (first 10 lines):
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.1.0.sh: line 6: lib/cml/src/palette_loader_v0.1.0.sh: No such file or directory
+
+DBML box render:
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-lib-smoke-1.1.0.sh: line 9: lib/dbml/src/box_renderer_v0.1.0.sh: No such file or directory
+

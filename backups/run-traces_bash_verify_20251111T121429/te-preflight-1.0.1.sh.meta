@@ -1,0 +1,5 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.1.sh
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.1.sh
+method: bash (forced for bin)
+exit-sample:
+te-preflight placeholder executed

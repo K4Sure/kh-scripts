@@ -1,0 +1,26 @@
+Creating termux-ecosystem root at: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/csml
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/dbml/presets
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/pml/wrappers
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/python-helpers
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/etc
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/exports
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/banners
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/share/icons
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/logs/app
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups/full
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/backups/incremental
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/archives
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/var/tmp
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tests
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/examples
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/docs
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-run-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-backup-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-restore-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-log-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.0.sh
+ exists: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/cml_v1.0.0.sh
+/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/create-structure-1.0.0.sh: line 74: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/lib/cml/themes/theme-default_v1.0.0.yaml: Permission denied

@@ -1,0 +1,10 @@
+==== /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-wrapper-gen.sh.bak
+path: /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/bin/te-wrapper-gen.sh.bak
+method: exec (executable)
+exit-sample:
+\033[1mUsage:\033[0m te-wrapper-gen.sh <type> <name> <version>
+  - type: bin | sh | python | yaml | conf
+  - name: base file name without extension (e.g., pml-helper, theme-default)
+  - version: semantic version (e.g., 1.0.0)
+
+Examples:
