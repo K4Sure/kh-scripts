@@ -14,7 +14,7 @@ ECOROOT="/data/data/com.termux/files/home/kh-scripts/termux-ecosystem"
 PASS=0; FAIL=0
 TIMEOUT="${TIMEOUT:-15}"
 
-tmpout="$(mktemp -t te-smoke.XXXXXX)" || tmpout="/tmp/te-smoke.$$"
+tmpout="$(mktemp -t te-smoke.XXXXXX)" || tmpout="${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/te-smoke.$$"
 trap 'rm -f "$tmpout"' EXIT
 
 info() { printf "  %s\n" "$*"; }
