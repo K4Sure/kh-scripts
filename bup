@@ -189,8 +189,8 @@ sync_latest_to_source(){
 }
 
 # robust logs
-FAIL_LOG="$(mktemp "${TMPDIR:-/tmp}/bup_fail.XXXXXX")" || FAIL_LOG="/tmp/bup_fail.$$"
-SKIP_LOG="$(mktemp "${TMPDIR:-/tmp}/bup_skip.XXXXXX")" || SKIP_LOG="/tmp/bup_skip.$$"
+FAIL_LOG="$(mktemp "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/bup_fail.XXXXXX")" || FAIL_LOG="/tmp/bup_fail.$$"
+SKIP_LOG="$(mktemp "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/bup_skip.XXXXXX")" || SKIP_LOG="/tmp/bup_skip.$$"
 
 : > "$FAIL_LOG"
 : > "$SKIP_LOG"
@@ -248,7 +248,7 @@ backup_one(){
 
   # capture cp stderr reliably
   local err
-  err="$(mktemp "${TMPDIR:-/tmp}/bup_cp.XXXXXX" 2>/dev/null || printf '/tmp/bup_cp.%s' "$$")"
+  err="$(mktemp "${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}/bup_cp.XXXXXX" 2>/dev/null || printf '/tmp/bup_cp.%s' "$$")"
   if cp -p -- "$src" "$dest" 2> "$err"; then
     rm -f "$err" 2>/dev/null || true
     return 0
