@@ -1,0 +1,9 @@
+
+## Termux Ecosystem helper commands
+
+- Copypad helper: `copypad` (installed to Termux system bin).
+- Run local audit: `scripts/ci-audit.sh`
+- Run quick palette test: `tests/test_palette.sh`
+- Restore latest bin/cml backup: `cp -a backups/$(ls -1t backups | grep cml | head -n1) bin/cml && chmod +x bin/cml`
+- Logs: `logs/swatches.log` and `logs/ci/*`
+

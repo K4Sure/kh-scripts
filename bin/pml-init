@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-HOME_DIR="${HOME:-/data/data/com.termux/files/home}"
-BMC_BOOTSTRAP='/data/data/com.termux/files/home/bmc/bootstrap.sh'
-LIB_NAME='pml'
-ENTRY_NAME='pml::init'
-exec "$BMC_BOOTSTRAP" "$LIB_NAME" "$ENTRY_NAME" "$@"

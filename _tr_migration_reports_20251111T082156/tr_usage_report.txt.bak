@@ -1,0 +1,98 @@
+./ccccc:34:  ext=$(tr '[:upper:]' '[:lower:]' <<< "$ext")
+./check_urls.sh:15:        size=$(curl -s -I "$url" | grep -i "content-length" | tail -1 | awk '{print $2}' | tr -d '| sed s///g\r')
+./scripts/ci-audit.sh:11:echo "[ci-audit] logs: $(ls -1 logs/ci | tr '\n' ' ')"
+./library/colors/active_theme_block.sh.backup:3:CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+./library/colors/replace_section2.txt:5:  CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+./library/colors/section2_repl.txt:4:CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+./library/colors/utils/version.sh:5:cur="$(tr -d '\n' < "$VERSION_FILE")"
+./library/dynamic_box/dynamic_box_master_library.sh:51:    printf "%${width}s" | tr ' ' "$h"
+./library/dynamic_box/dynamic_box_master_library.sh:64:    printf "%${width}s" | tr ' ' "$h"
+./ranger-gen-cheatsheet.sh:21:visible_len() { echo -n "$1" | sed -r 's/\x1b\[[0-9;]*m//g' | wc -c | tr -d ' '; }
+./universal-backup/sbm:67:_clean(){ printf '%s' "$1" | sed -E $'s/\x1b\\[[0-9;]*m//g' | tr -d '\000-\011\013\014\016-\037' ; }
+./utf8-test.sh:14:printf '%10s\n' "" | tr " " "─"
+./utf8-test.sh:15:printf '%10s\n' "" | tr " " "═"
+./ytdl_menu/master_ytdl_menu.sh:43:        local upper_text=$(echo "$text" | tr '[:lower:]' '[:upper:]' | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
+./ytdl_menu/master_ytdl_menu.sh:46:        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$(echo "$text" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/master_ytdl_menu.sh:139:    URL=$(echo "$raw" | tr -d '[:space:]' | tr -d '\r\n')
+./ytdl_menu/master_ytdl_menu.sh:213:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/master_ytdl_menu.sh:221:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/master_ytdl_menu.sh:264:    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/master_ytdl_menu.sh:265:    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$(echo "$ACTION" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/master_ytdl_menu.sh:311:            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | tr -d ' ')
+./ytdl_menu/master_ytdl_menu.sh:312:            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | tr -d ' ')
+./ytdl_menu/master_ytdl_menu.sh:313:            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | tr -d ' ')
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:43:        local upper_text=$(echo "$text" | tr '[:lower:]' '[:upper:]' | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:46:        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$(echo "$text" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:139:    URL=$(echo "$raw" | tr -d '[:space:]' | tr -d '\r\n')
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:213:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:221:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:264:    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:265:    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$(echo "$ACTION" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:311:            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | tr -d ' ')
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:312:            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | tr -d ' ')
+./ytdl_menu/master_ytdl_menu.sh_backup_20251012_022333:313:            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu.sh.bak:45:        local upper_text=$(echo "$text" | tr '[:lower:]' '[:upper:]' | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
+./ytdl_menu/ytdl_menu.sh.bak:48:        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$(echo "$text" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/ytdl_menu.sh.bak:162:    URL=$(echo "$raw" | tr -d '[:space:]' | tr -d '\r\n')
+./ytdl_menu/ytdl_menu.sh.bak:248:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/ytdl_menu.sh.bak:257:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/ytdl_menu.sh.bak:305:    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/ytdl_menu.sh.bak:308:    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$(echo "$ACTION" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/ytdl_menu.sh.bak:365:            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu.sh.bak:366:            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu.sh.bak:367:            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:45:        local upper_text=$(echo "$text" | tr '[:lower:]' '[:upper:]' | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:48:        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$(echo "$text" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:162:    URL=$(echo "$raw" | tr -d '[:space:]' | tr -d '\r\n')
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:248:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:257:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:305:    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:308:    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$(echo "$ACTION" | tr '[:lower:]' '[:upper:]')"
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:365:            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:366:            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu.sh.bak_backup_20251012_022333:367:            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | tr -d ' ')
+./ytdl_menu/ytdl_menu_latest.sh:284:    local perc; perc=$(grep -o '[0-9]\+\(\.[0-9]\+\)\?%' <<<"$msg" | tr -d '%' || true)
+./ytdl_menu/ytdl_menu_v3.5.2.sh:284:    local perc; perc=$(grep -o '[0-9]\+\(\.[0-9]\+\)\?%' <<<"$msg" | tr -d '%' || true)
+./ytdl_menu/ytdl_menu_v3.5.2.sh_backup_20251012_022333:284:    local perc; perc=$(grep -o '[0-9]\+\(\.[0-9]\+\)\?%' <<<"$msg" | tr -d '%' || true)
+./ytdl_menu/ytdl_menu_v3.5.2_backup_20251012_003632.sh:284:    local perc; perc=$(grep -o '[0-9]\+\(\.[0-9]\+\)\?%' <<<"$msg" | tr -d '%' || true)
+./_tr_fix_backups_20251111T070417/bup.orig:257:    reason="$(sed -n '1,5p' "$err" 2>/dev/null | tr '\n' ' ' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+./_tr_fix_backups_20251111T070417/bup.orig:343:    failcount=$(wc -l < "$FAIL_LOG" 2>/dev/null | tr -d ' ')
+./_tr_fix_backups_20251111T070417/bup.orig:344:    skipcount=$(wc -l < "$SKIP_LOG" 2>/dev/null | tr -d ' ')
+./_tr_fix_backups_20251111T070417/bup.orig:426:    failcount=$(wc -l < "$FAIL_LOG" 2>/dev/null | tr -d ' ')
+./_tr_fix_backups_20251111T070417/bup.orig:427:    skipcount=$(wc -l < "$SKIP_LOG" 2>/dev/null | tr -d ' ')
+./_tr_fix_backups_20251111T070417/ccccc.orig:34:  ext=$(tr '[:upper:]' '[:lower:]' <<< "$ext")
+./_tr_fix_backups_20251111T070417/check_urls.sh.orig:15:        size=$(curl -s -I "$url" | grep -i "content-length" | tail -1 | awk '{print $2}' | tr -d '\r')
+./_tr_fix_backups_20251111T070417/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"
+./_tr_fix_backups_py_20251111T071457/ccccc.orig:34:  ext=$(tr '[:upper:]' '[:lower:]' <<< "$ext")
+./_tr_fix_backups_py_20251111T071457/check_urls.sh.orig:15:        size=$(curl -s -I "$url" | grep -i "content-length" | tail -1 | awk '{print $2}' | tr -d '| sed s///g\r')
+./_tr_fix_backups_py_20251111T071457/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"
+./_tr_fix_backups_py_20251111T071457/ci-audit.sh.orig:11:echo "[ci-audit] logs: $(ls -1 logs/ci | tr '\n' ' ')"
+./_tr_fix_backups_py_20251111T071457/active_theme_block.sh.backup.orig:3:CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+./_tr_fix_backups_py_20251111T071457/replace_section2.txt.orig:5:  CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+./_tr_fix_backups_py_20251111T071457/section2_repl.txt.orig:4:CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+./_tr_fix_backups_py_20251111T071457/version.sh.orig:5:cur="$(tr -d '\n' < "$VERSION_FILE")"
+./_tr_fix_backups_py_20251111T071457/dynamic_box_master_library.sh.orig:51:    printf "%${width}s" | tr ' ' "$h"
+./_tr_fix_backups_py_20251111T071457/dynamic_box_master_library.sh.orig:64:    printf "%${width}s" | tr ' ' "$h"
+./_tr_fix_backups_py_20251111T071457/ranger-gen-cheatsheet.sh.orig:21:visible_len() { echo -n "$1" | sed -r 's/\x1b\[[0-9;]*m//g' | wc -c | tr -d ' '; }
+./_tr_fix_backups_py_20251111T071457/sbm.orig:67:_clean(){ printf '%s' "$1" | sed -E $'s/\x1b\\[[0-9;]*m//g' | tr -d '\000-\011\013\014\016-\037' ; }
+./_tr_fix_backups_py_20251111T071457/utf8-test.sh.orig:14:printf '%10s\n' "" | tr " " "─"
+./_tr_fix_backups_py_20251111T071457/utf8-test.sh.orig:15:printf '%10s\n' "" | tr " " "═"
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:43:        local upper_text=$(echo "$text" | tr '[:lower:]' '[:upper:]' | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:46:        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$(echo "$text" | tr '[:lower:]' '[:upper:]')"
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:139:    URL=$(echo "$raw" | tr -d '[:space:]' | tr -d '\r\n')
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:213:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:221:        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:264:    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]')"
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:265:    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$(echo "$ACTION" | tr '[:lower:]' '[:upper:]')"
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:311:            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | tr -d ' ')
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:312:            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | tr -d ' ')
+./_tr_fix_backups_py_20251111T071457/master_ytdl_menu.sh.orig:313:            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | tr -d ' ')
+./_tr_fix_backups_termux_20251111T072731/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"
+./_tr_fix_backups_termux_20251111T073024/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"
+./_tr_fix_backups_termux_dynamic_20251111T073136/dynamic_box_master_library.sh.orig:51:    printf "%${width}s" | tr ' ' "$h"
+./_tr_fix_backups_termux_dynamic_20251111T073136/dynamic_box_master_library.sh.orig:64:    printf "%${width}s" | tr ' ' "$h"
+./_tr_fix_backups_termux_dynamic_20251111T073222/dynamic_box_master_library.sh.orig:51:    printf "%${width}s" | tr ' ' "$h"
+./_tr_fix_backups_termux_dynamic_20251111T073222/dynamic_box_master_library.sh.orig:64:    printf "%${width}s" | tr ' ' "$h"
+./_tr_fix_backups_termux_fix_20251111T073811/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"
+./_tr_fix_backups_termux_fix_20251111T073843/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"
+./_tr_fix_backups_termux_fix_20251111T073926/box_preset_v0.2.0.sh.orig:13:  printf '%*s' "$1" '' | tr ' ' "$2"

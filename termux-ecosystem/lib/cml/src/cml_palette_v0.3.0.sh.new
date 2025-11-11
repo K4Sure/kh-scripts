@@ -1,0 +1,52 @@
+#!/usr/bin/env sh
+# portable cml_palette v0.3.0 - merge palette keys from YAML files
+set -e
+
+usage(){
+  cat >&2 <<USAGE
+Usage: $0 <theme-file.yaml> [override1.yaml ...]
+Prints merged key:value lines (later files override earlier ones).
+USAGE
+  exit 2
+}
+
+if [ $# -lt 1 ]; then usage; fi
+
+TMP=${TMPDIR:-/tmp}/cmlpal.$$.$RANDOM
+trap 'rm -f "$TMP"' EXIT
+: > "$TMP"
+
+extract_palette() {
+  file="$1"
+
+first="$1"; shift
+case "$first" in
+  */*|*.yaml) base="$first" ;;
+  *) base="lib/cml/themes/${first}_v1.0.0.yaml" ;;
+esac
+
+if [ ! -f "$base" ]; then
+  echo "ERROR: base theme not found: $base" >&2
+  exit 3
+fi
+
+extract_palette "$base" >> "$TMP"
+for of in "$@"; do
+  if [ -f "$of" ]; then
+    extract_palette "$of" >> "$TMP"
+  else
+    echo "WARNING: override not found: $of" >&2
+  fi
+done
+
+awk -F: '
+  {
+    key=$1; gsub(/^[[:space:]]+|[[:space:]]+$/,"",key);
+    val=substr($0, index($0,":")+1);
+    sub(/^[[:space:]]+/,"",val);
+    last[key]=val;
+  }
+  END {
+    for (k in last) print k ":" last[k]
+  }
+' "$TMP" | sort

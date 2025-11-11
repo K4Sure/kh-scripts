@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+set -e
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+cmd="$1"; shift || true
+case "$cmd" in
+  palette)
+    if [ -t 1 ]; then
+      export COLORTERM=truecolor
+      "$ROOT_DIR"/lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@" | "$ROOT_DIR"/lib/cml/src/cml_palette_swatch_v0.1.0.sh
+      exit 0
+    fi
+    exec "$ROOT_DIR"/lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@"
+    ;;
+  swatch)
+    export COLORTERM=truecolor
+    if command -v python3 >/dev/null 2>&1; then lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@" | python3 lib/cml/src/cml_palette_swatch_v0.1.0.py;
+    elif command -v python >/dev/null 2>&1; then lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@" | python lib/cml/src/cml_palette_swatch_v0.1.0.py;
+    elif [ -x "lib/cml/src/cml_palette_swatch_v0.1.0.py" ]; then lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@" | lib/cml/src/cml_palette_swatch_v0.1.0.py;
+    else lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@" | lib/cml/src/cml_palette_swatch_v0.1.0.sh; fi
+    ;;
+  ""|help|-h|--help)
+    cat <<USAGE
+cml — local-first CLI
+Usage:
+  cml palette <base|edge_base|path> [override.yaml ... | -]
+  cml swatch <base|edge_base|path> [override.yaml ... | -]
+Notes:
+  - TTY: "cml palette" shows TrueColor swatches by default.
+  - Pipe/redirect: "cml palette" outputs plain normalized pairs.
+  - Stdin overrides: pipe raw key:"#hex"; "-" auto-added when piped.
+  - Last-wins: later inputs override earlier ones.
+  - Normalized: keys lowercase; values trimmed and de-quoted.
+USAGE
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    exit 2
+    ;;
+esac

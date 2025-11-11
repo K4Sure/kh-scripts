@@ -1,0 +1,65 @@
+#!/usr/bin/env sh
+# Minimal cml_palette_v0.3.0.sh shim
+# Accepts: file.yaml ... - (stdin). Emits normalized lines key:"#hex" where possible.
+# Behavior: simple YAML-ish parse (key: value), trim quotes/spaces, last-wins.
+set -e
+
+# If no args, read stdin
+if [ $# -eq 0 ]; then
+  set -- -
+fi
+
+# Collect inputs in order; treat "-" as stdin
+# For each source, parse lines like "key: value" (simple)
+tmp=$(mktemp)
+trap 'rm -f "$tmp"' EXIT
+
+for src in "$@"; do
+  if [ "x$src" = "x-" ]; then
+    cat - >> "$tmp"
+  elif [ -f "$src" ]; then
+    # accept YAML files: read lines
+    awk '{
+      # print raw lines; let downstream parse
+      print
+    }' "$src" >> "$tmp"
+  else
+    echo "WARNING: source not found: $src" >&2
+  fi
+done
+
+# Parse tmp: lines matching key: value; support indentation; keep last-wins
+awk '
+  function ltrim(s){ sub(/^[ \t\r\n]+/,"",s); return s }
+  function rtrim(s){ sub(/[ \t\r\n]+$/,"",s); return s }
+  function trim(s){ return rtrim(ltrim(s)) }
+  BEGIN{ FS=":" }
+  {
+    # skip non key: lines
+    if ($0 ~ /^[[:space:]]*[A-Za-z0-9_.-]+[[:space:]]*:/) {
+      # extract key as up to colon
+      key=$0
+      sub(/:.*/,"",key)
+      gsub(/^[ \t]+|[ \t]+$/,"",key)
+      key=tolower(key)
+      # value is the rest after first colon
+      val=substr($0, index($0,":")+1)
+      gsub(/^[ \t]+|[ \t]+$/,"",val)
+      # remove surrounding double quotes if present
+      if (val ~ /^".*"$/) {
+        val=substr(val,2,length(val)-2)
+      }
+      # ensure leading # for hex-like values not required; just print as-is
+      last[key]=val
+  # core-level strict hex: fail if any val malformed
+  if (val !~ /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/) { print "FATAL: invalid hex for " key ": " val > "/dev/stderr"; exit 2 }
+      seen[key]=1
+    }
+  }
+  END {
+    for (k in last) {
+      # print as key:"value" using double quotes for consistency
+      printf "%s:\"%s\"\n", k, last[k]
+    }
+  }
+' "$tmp"

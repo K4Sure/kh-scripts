@@ -1,0 +1,13 @@
+CI local run: 20251111T0250 (Asia/Kuala_Lumpur)
+
+=== MANIFEST LINT ===
+manifest-lint v1.1.0 running...
+
+MANIFEST LINT: OK
+
+=== MANIFEST FIX SUGGESTIONS ===
+manifest-fix: done
+
+=== RUN CML UNIT TESTS ===
+FAIL: missing key a
+CML tests failed

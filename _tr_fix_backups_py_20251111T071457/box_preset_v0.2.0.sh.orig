@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+# box_preset v0.2.0 - render multi-line box from a preset file
+preset_name="${1:-box-wide}"
+label="${2:-hello}"
+width="${3:-20}"
+preset="lib/dbml/presets/${preset_name}_v1.0.0.conf"
+border_char="|"
+if [ -f "$preset" ]; then
+  . "$preset" 2>/dev/null || true
+fi
+# simple box: top border, middle with label centered, bottom border
+pad() {
+  printf '%*s' "$1" '' | tr ' ' "$2"
+}
+inner=$((width-2))
+top=$(printf '%s' "$(pad "$inner" "-")")
+echo "+${top}+"
+# center label
+label_len=${#label}
+left=$(( (inner - label_len) / 2 ))
+right=$(( inner - label_len - left ))
+printf '%s' "${border_char}"
+printf '%s' "$(pad "$left" " ")"
+printf '%s' "$label"
+printf '%s' "$(pad "$right" " ")"
+printf '%s\n' "${border_char}"
+echo "+${top}+"

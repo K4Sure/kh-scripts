@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+LOG_DIR="${HOME}/kh-scripts/termux-ecosystem/log"
+LOG_FILE="${LOG_DIR}/te-run.log"
+mkdir -p "$LOG_DIR"
+
+# If DRY_RUN=1 is set, commands that change state should be printed not executed.
+DRY_RUN="${DRY_RUN:-0}"
+run_cmd() {
+  if [ "$DRY_RUN" = "1" ]; then
+    printf "DRY RUN: %s\n" "$*"
+  else
+    eval "$@"
+  fi
+}
+
+# Fail trap writes a failure line with exit code
+trap 'code=$?; printf "%s | te-run 1.0.0 | fail | exit %s\n" "$(date +%Y-%m-%d %H:%M:%S)" "$code" >> "$LOG_FILE"' ERR
+
+echo "→ Termux Ecosystem: run started"
+printf "%s | te-run 1.0.0 | start\n" "$(date +'%Y-%m-%d %H:%M:%S')" >> "$LOG_FILE"
+
+# 1) Preflight (must exist)
+if [ -x "${HOME}/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.1.sh" ]; then
+  run_cmd "\"${HOME}/kh-scripts/termux-ecosystem/bin/te-preflight-1.0.1.sh\""
+else
+  echo "warning: preflight not found, continuing"
+fi
+
+# 2) Manifest generation (replace path with your real generator if different)
+MANIFEST_GEN="${HOME}/kh-scripts/termux-ecosystem/lib/python-helpers/manifest-gen_v1_0_1.py"
+if [ -f "$MANIFEST_GEN" ]; then
+  run_cmd "python3 \"$MANIFEST_GEN\" --out \"${HOME}/kh-scripts/termux-ecosystem/manifest.json\""
+else
+  echo "skip: manifest generator not found"
+fi
+
+# 3) Linters / validators (add or edit commands to match your tools)
+# Example: run YAML linter on lib/cml
+if command -v yamllint >/dev/null 2>&1; then
+  run_cmd "yamllint -c .yamllint.yaml \"${HOME}/kh-scripts/termux-ecosystem/lib/cml\" || true"
+else
+  echo "skip: yamllint not available"
+fi
+
+# 4) Installers / package steps (safe default: run te-smoke instead of destructive installs)
+SMOKE="${HOME}/kh-scripts/termux-ecosystem/bin/te-smoke.sh"
+if [ -x "$SMOKE" ]; then
+  run_cmd "\"$SMOKE\""
+else
+  echo "skip: smoke script not found"
+fi
+
+# 5) Optional backup (non-fatal)
+BACKUP_BIN="${HOME}/kh-scripts/termux-ecosystem/bin/te-backup-1.0.0.sh"
+if [ -x "$BACKUP_BIN" ]; then
+  run_cmd "\"$BACKUP_BIN\""
+fi
+
+# Success
+printf "%s | te-run 1.0.0 | ok\n" "$(date +'%Y-%m-%d %H:%M:%S')" >> "$LOG_FILE"
+echo "✅ Termux Ecosystem: run completed"

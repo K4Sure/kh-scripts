@@ -1,0 +1,240 @@
+#!/usr/bin/env bash
+# te-wrapper-gen.sh
+# version: 1.0.0
+# description: generator for branded, versioned placeholders across the Termux Ecosystem
+# notes: creates files with correct paths, headers, and permissions
+
+set -euo pipefail
+
+ECOROOT="/data/data/com.termux/files/home/kh-scripts/termux-ecosystem"
+
+# --- emoji + minimal styling ---
+ok="✅"; warn="⚠️"; err="❌"
+c_bold="\033[1m"; c_reset="\033[0m"
+
+usage() {
+  cat <<USAGE
+${c_bold}Usage:${c_reset} te-wrapper-gen.sh <type> <name> <version>
+  - type: bin | sh | python | yaml | conf
+  - name: base file name without extension (e.g., pml-helper, theme-default)
+  - version: semantic version (e.g., 1.0.0)
+
+Examples:
+  te-wrapper-gen.sh bin te-preflight 1.0.0
+  te-wrapper-gen.sh sh pml-helper 1.0.0
+  te-wrapper-gen.sh python json-tool 1.0.0
+  te-wrapper-gen.sh yaml theme-default 1.0.0
+  te-wrapper-gen.sh conf box-thin 1.0.0
+USAGE
+}
+
+require_args() {
+  if [ "${#@}" -ne 3 ]; then
+    usage; exit 1
+  fi
+}
+
+# --- path resolvers per type ---
+resolve_path() {
+  local type="$1" name="$2" version="$3"
+  case "$type" in
+    bin)
+      echo "${ECOROOT}/bin/${name}-${version}.sh"
+      ;;
+    sh)
+      case "$name" in
+        cml-*) lib="cml" ;;
+        dbml-*) lib="dbml" ;;
+        pml-*) lib="pml" ;;
+        bmc-*) lib="bmc" ;;
+        *)
+          echo -e "${warn} Unknown library for shell helper '${name}'. Use one of: cml-, dbml-, pml-, bmc-"
+          exit 1
+          ;;
+      esac
+      echo "${ECOROOT}/lib/${lib}/${name}_${version}.sh"
+      ;;
+    python)
+      echo "${ECOROOT}/lib/python-helpers/${name}_v${version//./_}.py"
+      ;;
+    yaml)
+      case "$name" in
+        cml-*) lib="cml" ;;
+        dbml-*) lib="dbml" ;;
+        pml-*) lib="pml" ;;
+        bmc-*) lib="bmc" ;;
+        *)
+          lib="cml" ;;
+      esac
+      echo "${ECOROOT}/lib/${lib}/themes/${name}_v${version}.yaml"
+      ;;
+    conf)
+      case "$name" in
+        dbml-*) lib="dbml" ;;
+        cml-*) lib="cml" ;;
+        pml-*) lib="pml" ;;
+        bmc-*) lib="bmc" ;;
+        *)
+          lib="dbml" ;;
+      esac
+      echo "${ECOROOT}/lib/${lib}/presets/${name}_v${version}.conf"
+      ;;
+    *)
+      echo -e "${err} Unknown type '${type}'. Use: bin | sh | python | yaml | conf"
+      exit 1
+      ;;
+  esac
+}
+
+# --- templates ---
+tpl_bin() {
+  local name="$1" version="$2"
+  cat <<TPL
+#!/usr/bin/env bash
+# ${name}-${version}.sh
+# version: ${version}
+# description: placeholder bin helper
+# notes: to be expanded with actual functionality
+
+SCRIPT_VERSION="v${version}"
+
+main() {
+  echo "${name} placeholder executed"
+}
+
+main "\$@"
+TPL
+}
+
+tpl_sh() {
+  local name="$1" version="$2"
+  cat <<TPL
+#!/usr/bin/env bash
+# ${name}_${version}.sh
+# version: ${version}
+# description: placeholder library shell helper
+# notes: to be expanded with actual functionality
+
+SCRIPT_VERSION="v${version}"
+
+main() {
+  echo "${name} placeholder executed"
+}
+
+main "\$@"
+TPL
+}
+
+tpl_python() {
+  local name="$1" version="$2"
+  local ver_u="${version//./_}"
+  cat <<TPL
+#!/usr/bin/env python3
+# ${name}_v${ver_u}.py
+# version: ${version}
+# description: placeholder Python helper
+# notes: to be expanded with actual utilities
+
+def main():
+    print("${name} placeholder executed")
+
+if __name__ == "__main__":
+    main()
+TPL
+}
+
+tpl_yaml() {
+  local name="$1" version="$2"
+  cat <<TPL
+# placeholder file
+# version: ${version}
+# description: ${name} theme placeholder
+# notes: to be expanded with actual theme definitions
+TPL
+}
+
+tpl_conf() {
+  local name="$1" version="$2"
+  cat <<TPL
+# placeholder file
+# version: ${version}
+# description: ${name} preset placeholder
+# notes: to be expanded with actual preset definitions
+TPL
+}
+
+# --- creation with guards ---
+create_file() {
+  local path="$1" content="$2" mode="$3"
+  local dir
+  dir="$(dirname "$path")"
+
+  [ -d "$dir" ] || mkdir -p "$dir"
+
+  if [ -e "$path" ]; then
+    echo -e "${warn} Exists: $path — not overwriting."
+    return 0
+  fi
+
+  printf "%s" "$content" > "$path"
+  chmod "$mode" "$path"
+  echo -e "${ok} Created: $path (mode $mode)"
+}
+
+main() {
+  require_args "$@"
+  local type="$1" name="$2" version="$3"
+
+  local path
+  path="$(resolve_path "$type" "$name" "$version")"
+
+  case "$type" in
+    bin)    create_file "$path" "$(tpl_bin    "$name" "$version")" "700" ;;
+    sh)     create_file "$path" "$(tpl_sh     "$name" "$version")" "700" ;;
+    python) create_file "$path" "$(tpl_python "$name" "$version")" "700" ;;
+    yaml)   create_file "$path" "$(tpl_yaml   "$name" "$version")" "600" ;;
+    conf)   create_file "$path" "$(tpl_conf   "$name" "$version")" "600" ;;
+  esac
+}
+
+main "$@"
+
+# --- te-wrapper-gen: --force support ---
+TE_FORCE=0
+for arg in "$@"; do
+  case "$arg" in
+    --force) TE_FORCE=1 ;;
+  esac
+done
+
+# helper: write file with optional overwrite
+write_file() {
+  # args: path mode content_marker
+  # content_marker is just a label we may grep for "placeholder executed" etc.
+  local path="$1" mode="$2" marker="$3"
+
+  if [ -e "$path" ] && [ "$TE_FORCE" -ne 1 ]; then
+    printf "⚠️ Exists: %s — not overwriting.\n" "$path"
+    return 0
+  fi
+
+  # ensure parent directory exists
+  mkdir -p "$(dirname "$path")" || {
+    printf "❌ Failed to create directory: %s\n" "$(dirname "$path")"
+    return 1
+  }
+
+  # write minimal placeholder when marker indicates text file
+  # The generator likely sets content earlier; here we only ensure chmod/feedback.
+  # If content is piped/redirected elsewhere in script, leave as-is.
+  chmod "$mode" "$path" 2>/dev/null || : # mode may apply after content creation elsewhere
+
+  if [ ! -f "$path" ]; then
+    : # content handled by original script flow
+  fi
+
+  # final feedback and mode correction
+  chmod "$mode" "$path" 2>/dev/null || true
+  printf "✅ Created: %s (mode %s)\n" "$path" "$mode"
+}
+

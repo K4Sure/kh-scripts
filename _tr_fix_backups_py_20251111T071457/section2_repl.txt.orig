@@ -1,0 +1,34 @@
+# --- START REPLACED SECTION: single ACTIVE THEME print (robust + balanced) ---
+# read only first non-empty line, strip CR/LF, uppercase
+CURRENT_THEME=$(awk 'NF{print; exit}' "$THEME_FILE" 2>/dev/null || printf 'CLASSIC')
+CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+CURRENT_THEME="${CURRENT_THEME^^}"
+[ -z "$CURRENT_THEME" ] && CURRENT_THEME="CLASSIC"
+
+# try to load palette (silent)
+PALETTE_OK=false
+if declare -F cml_load_palette >/dev/null 2>&1 && cml_load_palette "$CURRENT_THEME" >/dev/null 2>&1; then
+  PALETTE_OK=true
+fi
+
+# Print a single ACTIVE THEME line; prefer palette colorization when available,
+# otherwise fall back to theme_accent_print which uses RGB fallback logic.
+if [ "$PALETTE_OK" = true ] && declare -F cml_colorize >/dev/null 2>&1; then
+  if [ -n "${C_ACCENT:-}" ]; then
+    cml_colorize "✔ ACTIVE THEME: ${CURRENT_THEME}" "${C_ACCENT}"
+    printf "\n"
+  elif [ -n "${C_TITLE:-}" ]; then
+    cml_colorize "✔ ACTIVE THEME: ${CURRENT_THEME}" "${C_TITLE}"
+    printf "\n"
+  elif [ -n "${C_GOOD:-}" ]; then
+    cml_colorize "✔ ACTIVE THEME: ${CURRENT_THEME}" "${C_GOOD}"
+    printf "\n"
+  else
+    theme_accent_print "✔ ACTIVE THEME: ${CURRENT_THEME}"
+  fi
+else
+  theme_accent_print "✔ ACTIVE THEME: ${CURRENT_THEME}"
+fi
+
+printf "\n"
+# --- END REPLACED SECTION ---

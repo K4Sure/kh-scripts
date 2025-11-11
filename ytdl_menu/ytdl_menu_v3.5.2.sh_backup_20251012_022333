@@ -281,7 +281,7 @@ spin_with_status(){
   while kill -0 "$pid" 2>/dev/null; do
     i=$(((i+1)%len))
     local msg; msg=$(cat "$status_file" 2>/dev/null || echo "WORKING...")
-    local perc; perc=$(grep -o '[0-9]\+\(\.[0-9]\+\)\?%' <<<"$msg" | tr -d '%' || true)
+    local perc; perc=$(grep -o '[0-9]\+\(\.[0-9]\+\)\?%' <<<"$msg" | sed -E 's/\1//g' || true)
     perc=${perc:-0}; local ip=${perc%.*}
     local col="$url_color"
     (( ip >= 35 )) && col="$NEON_YELLOW"

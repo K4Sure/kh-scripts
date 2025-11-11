@@ -1,0 +1,5 @@
+name: override
+version: 1.0.0
+palette:
+  b: "#222222"
+  c: "#333333"

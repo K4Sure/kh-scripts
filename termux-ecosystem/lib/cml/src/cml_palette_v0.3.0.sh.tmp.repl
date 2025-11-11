@@ -1,0 +1,5 @@
+extract_palette() {
+  # Portable palette extractor: print lines under "palette:" that look like "  key: value"
+  sed -n '/^palette:/,/^[^[:space:]]/p' "$1" 2>/dev/null \
+    | sed -n 's/^[[:space:]]\+\([[:alnum:]_-]\+\):[[:space:]]*\(.*\)/\1:\2/p'
+}

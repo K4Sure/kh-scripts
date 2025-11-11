@@ -40,10 +40,10 @@ say(){ printf '%s\n' "$*"; }
 banner(){ 
     local text="$1"
     if [[ "$text" == *"v"* ]]; then
-        local upper_text=$(echo "$text" | tr '[:lower:]' '[:upper:]' | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
+        local upper_text=$("$text" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().upper())" | sed 's/VERSION/version/; s/ V/ v/; s/^V/ v/')
         printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$upper_text"
     else
-        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$(echo "$text" | tr '[:lower:]' '[:upper:]')"
+        printf '\n\e[1;31m===[ %s ]===\e[0m\n' "$("$text" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().upper())")"
     fi
 }
 log(){
@@ -210,7 +210,7 @@ set_notify_theme(){
 notify_progress(){
     local pct="$1" eta="$2" spd="$3"
     termux-notification --id "$NOTIFID" \
-        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+        --title "$NOTIFTITLEPREFIX | YT-DLP ($("$SITE_NAME" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().upper())"))" \
         --content "DOWNLOADING: ${pct} | ETA ${eta} | ${spd}" \
         --ongoing \
         --led-color "$LEDCOLOR" --led-on 800 --led-off 1200 >/dev/null 2>&1 || true
@@ -218,7 +218,7 @@ notify_progress(){
 notify_status(){
     local msg="$1" pr="${2:-default}"
     termux-notification --id "$NOTIFID" \
-        --title "$NOTIFTITLEPREFIX | YT-DLP ($(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]'))" \
+        --title "$NOTIFTITLEPREFIX | YT-DLP ($("$SITE_NAME" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().upper())"))" \
         --content "$msg" \
         --priority "$pr" \
         --led-color "$LEDCOLOR" --led-on 1200 --led-off 800 >/dev/null 2>&1 || true
@@ -261,8 +261,8 @@ run_action(){
     echo
     printf "${LIGHT_PINK}PROFILE${RESET} : ${PROFILE_COLOR}%s\e[0m\n" "$PROFILE"
     local site_color=$(get_site_color "$SITE_NAME")
-    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$(echo "$SITE_NAME" | tr '[:lower:]' '[:upper:]')"
-    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$(echo "$ACTION" | tr '[:lower:]' '[:upper:]')"
+    printf "${LIGHT_PINK}SITE${RESET}    : ${site_color}%s\e[0m\n" "$("$SITE_NAME" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().upper())")"
+    printf "${LIGHT_PINK}ACTION${RESET}  : ${NEON_ORANGE}%s${RESET}\n" "$("$ACTION" | python3 -c "import sys; sys.stdout.write(sys.stdin.read().upper())")"
     printf "${LIGHT_PINK}URL${RESET}     : ${BEIGE}%s${RESET}\n" "$URL"
     printf "${LIGHT_PINK}ARCHIVE${RESET} : ${BEIGE}%s${RESET}\n" "$(shorten_path "$ARCHIVEFILE")"
     printf "${LIGHT_PINK}OUTPUT${RESET}  : ${BEIGE}%s${RESET}\n" "$(shorten_path "$OUTPUT_DIR")"
@@ -308,9 +308,9 @@ run_action(){
             wait "$DL_PID"; RC=$?
             kill "$TAIL_PID" 2>/dev/null || true
             rm -f "$STATUS_FILE" 2>/dev/null || true
-            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | tr -d ' ')
-            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | tr -d ' ')
-            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | tr -d ' ')
+            VIDEOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp4" -o -iname "*.mkv" -o -iname "*.webm" \) | wc -l | sed -E 's/\1//g')
+            PHOTOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -o -iname "*.gif" \) | wc -l | sed -E 's/\1//g')
+            AUDIOCOUNT=$(find "$OUTPUT_DIR" -type f -newer "$MARKER" \( -iname "*.mp3" -o -iname "*.m4a" -o -iname "*.aac" -o -iname "*.opus" \) | wc -l | sed -E 's/\1//g')
             rm -f "$MARKER" 2>/dev/null || true
             [[ ${VIDEOCOUNT:-0} -gt 0 ]] && printf "\e[1;38;5;46mTOTAL VIDEOS DOWNLOADED = %d\e[0m\n" "$VIDEOCOUNT" && log "VIDEOS DOWNLOADED: $VIDEOCOUNT"
             [[ ${PHOTOCOUNT:-0} -gt 0 ]] && printf "\e[1;38;5;46mTOTAL PHOTOS DOWNLOADED = %d\e[0m\n" "$PHOTOCOUNT" && log "PHOTOS DOWNLOADED: $PHOTOCOUNT"

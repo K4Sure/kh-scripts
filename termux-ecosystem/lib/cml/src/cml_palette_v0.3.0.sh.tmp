@@ -1,0 +1,66 @@
+#!/usr/bin/env sh
+# cml_palette v0.3.0 - merge palettes: base + override + local (later files win)
+set -e
+usage() {
+  cat <<USAGE >&2
+Usage: $0 <theme-name|base-filepath> [override-file ...]
+Example: $0 theme-default lib/cml/themes/theme-override_v1.0.0.yaml
+Example (direct file): $0 lib/cml/themes/base_v1.0.0.yaml lib/cml/themes/override_v1.0.0.yaml
+USAGE
+  exit 2
+}
+if [ $# -lt 1 ]; then usage; fi
+
+# Accept either a theme name (base looked up under lib/cml/themes/NAME_v1.0.0.yaml)
+# or a direct YAML filepath (if the first argument contains a slash or ends with .yaml)
+first="$1"; shift
+case "$first" in
+  */*|*.yaml) base="$first" ;;
+  *) base="lib/cml/themes/${first}_v1.0.0.yaml" ;;
+esac
+
+if [ ! -f "$base" ]; then
+  echo "ERROR: base theme not found: $base" >&2
+  exit 3
+fi
+
+extract_palette() {
+  awk '
+    /^palette:/ { inpal=1; next }
+    inpal && /^[[:space:]]+[[:alnum:]_-]+:/ {
+      gsub(/^[[:space:]]+|[[:space:]]+$/,"")
+      sub(/: */,":")
+      print
+    }
+    inpal && NF==0 { exit }
+  ' "$1" 2>/dev/null || true
+}
+
+TMP=$(mktemp "${TMPDIR:-/tmp}/cmlpal.XXXXXX" 2>/dev/null || mktemp 2>/dev/null || echo "${TMPDIR:-/tmp}/cmlpal.$$")
+trap 'rm -f "$TMP"' EXIT
+
+extract_palette "$base" >> "$TMP"
+for of in "$@"; do
+  if [ -f "$of" ]; then
+    extract_palette "$of" >> "$TMP"
+  else
+    echo "WARNING: override not found: $of" >&2
+  fi
+done
+
+if ! tty -s; then
+  awk '/^[[:alnum:]_-]+:/{print}' - >> "$TMP" 2>/dev/null || true
+fi
+
+# Robust reducer: keep last assignment for each key, then print sorted key:value lines
+awk -F: '
+  {
+    key=$1; gsub(/^[[:space:]]+|[[:space:]]+$/,"",key);
+    val=substr($0, index($0,":")+1);
+    sub(/^[[:space:]]+/,"",val);
+    last[key]=val;
+  }
+  END {
+    for (k in last) print k ":" last[k]
+  }
+' "$TMP" | sort

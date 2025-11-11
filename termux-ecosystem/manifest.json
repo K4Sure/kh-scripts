@@ -1,0 +1,20 @@
+{
+  "components": {
+    "bins": [
+      "te-run-1.0.0.sh",
+      "te-preflight-1.0.1.sh",
+      "te-smoke.sh",
+      "te-backup-1.0.0.sh",
+      "te-install-1.0.0.sh"
+    ],
+    "libs": [
+      "lib/pml/pml-helper_1.0.1.sh"
+    ],
+    "themes": [
+      "lib/cml/themes/theme-default_v1.0.1.yaml"
+    ]
+  },
+  "description": "Bootstrap manifest for Termux ecosystem",
+  "name": "termux-ecosystem",
+  "version": "0.0.1"
+}

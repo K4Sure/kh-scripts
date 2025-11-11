@@ -1,0 +1,59 @@
+CI local run: 20251111T0230 (Asia/Kuala_Lumpur)
+
+=== MANIFEST LINT ===
+manifest-lint v1.1.0 running...
+
+MANIFEST LINT: OK
+
+=== MANIFEST FIX SUGGESTIONS ===
+manifest-fix: done
+
+=== RUN CML UNIT TESTS ===
+PASS: palette_merge_test_v0.1.0
+
+=== RUN LIB SMOKE (DBML) ===
+Running CML palette unit test:
+PASS: palette_merge_test_v0.1.0
+
+CML merged palette sample:
+
+DBML box preset render (preset box-wide, label: Welcome, width: 30):
++----------------------------+
+|          Welcome           |
++----------------------------+
+
+lib smoke v1.4.0 complete
+
+=== FILES WITH VERSION TOKENS (sample) ===
+lib/cml/cml_v1.0.0.sh
+lib/cml/src/cml_palette_v0.2.0.sh
+lib/cml/src/cml_palette_v0.3.0.sh
+lib/cml/src/palette_loader_v0.1.0.sh
+lib/cml/tests/palette_edgecases_test_v0.1.0.sh
+lib/cml/tests/palette_merge_test_v0.1.0.sh
+lib/cml/themes/base_v1.0.0.yaml
+lib/cml/themes/edge_base_v1.0.0.yaml
+lib/cml/themes/edge_ovr_v1.0.0.yaml
+lib/cml/themes/override_v1.0.0.yaml
+lib/cml/themes/theme-dark_v1.0.0.yaml
+lib/cml/themes/theme-default_v1.0.0.yaml
+lib/cml/themes/theme-default_v1.0.1.yaml
+lib/csml/csml_v1.0.0.sh
+lib/dbml/dbml_v1.0.0.sh
+lib/dbml/presets/box-double_v1.0.0.conf
+lib/dbml/presets/box-thick_v1.0.0.conf
+lib/dbml/presets/box-thin_v1.0.0.conf
+lib/dbml/presets/box-thin_v1.0.1.conf
+lib/dbml/presets/box-wide_v1.0.0.conf
+lib/dbml/src/box_preset_v0.2.0.sh
+lib/dbml/src/box_preset_v0.3.0.sh
+lib/dbml/src/box_renderer_v0.1.0.sh
+lib/dbml/tests/wrap_align_test_v0.1.0.sh
+lib/pml/pml-helper_v1.0.0.sh
+lib/pml/pml_v1.0.0.sh
+lib/pml/wrappers/dl-wrapper_v1.0.0.sh
+lib/pml/wrappers/job-runner_v1.0.0.sh
+lib/python-helpers/json-tool_v1_0_0.py
+lib/python-helpers/json-tool_v1_0_1.py
+lib/python-helpers/manifest-gen_v1_0_0.py
+lib/python-helpers/manifest-gen_v1_0_1.py

@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# te-gen
+# small shim around te-wrapper-gen.sh that validates args and prints clearer errors
+set -euo pipefail
+
+GEN="${HOME}/kh-scripts/termux-ecosystem/bin/te-wrapper-gen.sh"
+
+usage() {
+  cat <<USAGE
+Usage: te-gen <type> <name> <version>
+  type: bin | sh | python | yaml | conf
+  name: base file name (prefix with cml-, dbml-, pml-, bmc- when required)
+  version: semantic version (e.g., 1.0.0)
+Example: te-gen sh pml-helper 1.0.1
+USAGE
+  exit 1
+}
+
+if [ "${#@}" -ne 3 ]; then
+  echo "Error: wrong number of arguments"
+  usage
+fi
+
+type="$1"; name="$2"; version="$3"
+
+case "$type" in
+  bin|sh|python|yaml|conf) ;;
+  *)
+    echo "Error: invalid type '$type'"
+    usage
+    ;;
+esac
+
+# basic semantic version sanity check: digits.digits.digits
+if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "Error: version must be semantic (X.Y.Z) — got '$version'"
+  usage
+fi
+
+if [ ! -x "$GEN" ]; then
+  echo "Error: generator missing or not executable at: $GEN"
+  exit 1
+fi
+
+# forward to generator
+"$GEN" "$type" "$name" "$version"

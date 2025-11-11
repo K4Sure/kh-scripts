@@ -1,0 +1,46 @@
+#!/usr/bin/env sh
+# cml_palette swatch renderer v0.1.0
+# TrueColor swatches, emoji header, timestamped audit logging, uses \e for ANSI escapes
+set -e
+export COLORTERM=truecolor
+TS_NOW=$(date +%Y%m%dT%H%M%S)
+mkdir -p logs
+echo "[$TS_NOW] cml_palette_swatch run" >> logs/swatches.log
+
+awk -F: -v TS="$TS_NOW" '
+  function trim(s){ gsub(/^[[:space:]]+|[[:space:]]+$/,"",s); return s }
+  function hex2rgb(h,    r,g,b){
+    if (length(h)==4) {
+      r=strtonum("0x" substr(h,2,1) substr(h,2,1))
+      g=strtonum("0x" substr(h,3,1) substr(h,3,1))
+      b=strtonum("0x" substr(h,4,1) substr(h,4,1))
+    } else {
+      r=strtonum("0x" substr(h,2,2))
+      g=strtonum("0x" substr(h,4,2))
+      b=strtonum("0x" substr(h,6,2))
+    }
+    return r "|" g "|" b
+  }
+  function swatch(k,h,    rgb,r,g,b,esc,reset,block,label){
+    rgb=hex2rgb(h)
+    split(rgb,a,"|"); r=a[1]; g=a[2]; b=a[3]
+    esc=sprintf("\e[38;2;%d;%d;%dm\e[48;2;%d;%d;%dm", r,g,b, r,g,b)
+    reset="\e[0m"
+    block="████████"
+    label=sprintf("%-3s %-8s %s", k, h, block)
+    printf("%s%s%s\n", esc, label, reset)
+    printf("[%s] %s %s\n", TS, k, h) >> "logs/swatches.log"
+  }
+  NR==1 { printf("🎨  Palette swatches\n") }
+  {
+    key=tolower(trim($1))
+    val=trim(substr($0, index($0,":")+1))
+    if (val ~ /^#[0-9a-fA-F]{3}([0-9a-fA-F]{3})?$/) {
+      swatch(key, val)
+    } else {
+      printf("WARNING: invalid hex for %s: %s\n", key, val) > "/dev/stderr"
+      printf("%s %s\n", key, val)
+      printf("[%s] INVALID %s %s\n", TS, key, val) >> "logs/swatches.log"
+    }
+  }
+'

@@ -1,0 +1,5 @@
+name: base
+version: 1.0.0
+palette:
+  a: "#000000"
+  b: "#111111"

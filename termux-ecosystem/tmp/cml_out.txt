@@ -1,0 +1,51 @@
++ set -e
++ [ 2 -lt 1 ]
++ TMP=/data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tmp/cmlpal.27351.
++ trap rm -f "$TMP" EXIT
++ :
++ first=lib/cml/themes/base_v1.0.0.yaml
++ shift
++ base=lib/cml/themes/base_v1.0.0.yaml
++ [ ! -f lib/cml/themes/base_v1.0.0.yaml ]
++ extract_palette lib/cml/themes/base_v1.0.0.yaml
++ file=lib/cml/themes/base_v1.0.0.yaml
++ awk 
+    BEGIN{inpal=0}
+    /^palette:[[:space:]]*$/ { inpal=1; next }
+    inpal && /^[[:space:]]+[[:alnum:]_-]+:[[:space:]]*/ {
+      # trim leading space, print key:value
+      sub(/^[[:space:]]+/, "");
+      gsub(/:[[:space:]]*/, ":", $0);
+      print $0
+    }
+    inpal && /^[^[:space:]]/ { inpal=0 }
+   lib/cml/themes/base_v1.0.0.yaml
++ [ -f lib/cml/themes/override_v1.0.0.yaml ]
++ extract_palette lib/cml/themes/override_v1.0.0.yaml
++ file=lib/cml/themes/override_v1.0.0.yaml
++ awk 
+    BEGIN{inpal=0}
+    /^palette:[[:space:]]*$/ { inpal=1; next }
+    inpal && /^[[:space:]]+[[:alnum:]_-]+:[[:space:]]*/ {
+      # trim leading space, print key:value
+      sub(/^[[:space:]]+/, "");
+      gsub(/:[[:space:]]*/, ":", $0);
+      print $0
+    }
+    inpal && /^[^[:space:]]/ { inpal=0 }
+   lib/cml/themes/override_v1.0.0.yaml
++ awk -F: 
+  {
+    key=$1; gsub(/^[[:space:]]+|[[:space:]]+$/,"",key);
+    val=substr($0, index($0,":")+1);
+    sub(/^[[:space:]]+/,"",val);
+    last[key]=val;
+  }
+  END {
+    for (k in last) print k ":" last[k]
+  }
+ /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tmp/cmlpal.27351.
++ sort
+a:"#000000"
+b:"#222222"
++ rm -f /data/data/com.termux/files/home/kh-scripts/termux-ecosystem/tmp/cmlpal.27351.

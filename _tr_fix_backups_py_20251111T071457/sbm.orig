@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+# sbm — Smart Backup Menu (guaranteed visible)
+set -euo pipefail
+IFS=$'\n\t'
+
+KH_HOME="/data/data/com.termux/files/home/kh-scripts"
+CML_ENGINE="$KH_HOME/library/colors/cml-truecolor.sh"
+DBML_LOADER="$KH_HOME/library/dynamic_box/dbml_loader.sh"
+CENTRAL_BACKUP="$KH_HOME/backup"
+LOGDIR="$KH_HOME/logs"
+LOGFILE="$LOGDIR/sbm.log"
+mkdir -p "$CENTRAL_BACKUP" "$LOGDIR"
+
+_now() { date +"%Y-%m-%d %H:%M:%S"; }
+_log() { printf '[%s] %s\n' "$(_now)" "$*" >> "$LOGFILE"; }
+
+# --- Visible header (always)
+echo
+echo "================================================================"
+echo " SMART BACKUP MENU (SBM) — starting (visible header guaranteed)"
+echo " Central backup: $CENTRAL_BACKUP"
+echo " Logfile: $LOGFILE"
+echo "================================================================"
+echo
+
+_log "sbm started"
+
+# Try to source CML & DBML (best-effort). Silence their output but record errors.
+if [ -f "$CML_ENGINE" ]; then
+  # shellcheck source=/dev/null
+  source "$CML_ENGINE" 2>>"$LOGFILE" || _log "Warning: CML source returned non-zero"
+else
+  _log "CML not found at $CML_ENGINE"
+  echo "⚠️  CML not found at $CML_ENGINE (continuing with plain UI)"
+fi
+
+if [ -f "$DBML_LOADER" ]; then
+  # shellcheck source=/dev/null
+  source "$DBML_LOADER" 2>>"$LOGFILE" || _log "Warning: DBML loader returned non-zero"
+else
+  _log "DBML loader not found at $DBML_LOADER"
+  echo "⚠️  DBML loader not found at $DBML_LOADER (continuing with plain UI)"
+fi
+
+# Ensure there's always a usable box function.
+if declare -f draw_box >/dev/null 2>&1; then
+  _dbml_draw() { draw_box "$@"; }
+else
+  _dbml_draw() {
+    # simple ASCII box fallback (always visible)
+    local style="$1"; shift
+    local title="$1"; shift
+    local lines=("$@")
+    local max=${#title}
+    for l in "${lines[@]}"; do (( ${#l} > max )) && max=${#l}; done
+    max=$((max + 4))
+    printf '┌%*s┐\n' "$max" '' | sed 's/ /─/g'
+    printf "│ %s%*s │\n" "$title" $((max-3-${#title})) ''
+    printf '├%*s┤\n' "$max" '' | sed 's/ /─/g'
+    for l in "${lines[@]}"; do printf "│ %s%*s │\n" "$l" $((max-3-${#l})) ''; done
+    printf '└%*s┘\n' "$max" '' | sed 's/ /─/g'
+  }
+fi
+
+# Helpers
+_now_ts(){ date +"%Y%m%d_%H%M%S"; }
+_clean(){ printf '%s' "$1" | sed -E $'s/\x1b\\[[0-9;]*m//g' | tr -d '\000-\011\013\014\016-\037' ; }
+_resolve() {
+  local p; p="$(_clean "$1")"
+  [ -z "$p" ] && { printf ''; return; }
+  [[ "$p" == "~"* ]] && p="${p/#\~/$HOME}"
+  [[ "$p" != /* ]] && p="${PWD%/}/$p"
+  command -v readlink >/dev/null 2>&1 && readlink -f -- "$p" 2>/dev/null || printf '%s' "$p"
+}
+_version_from_filename(){ local n="$1"; [[ "$n" =~ (v[0-9]+([.][0-9]+)*) ]] && printf '%s' "${BASH_REMATCH[1]}" || printf 'v0.0.0'; }
+_version_from_file(){ local f="$1"; [ -f "$f" ] || { printf 'v0.0.0'; return; }; local v; v="$(grep -m1 -E '^[A-Za-z_]*VERSION[[:space:]]*=' "$f" 2>/dev/null | sed -E 's/^[^=]*=[[:space:]]*["'\'']?([^"'\''[:space:]]+).*/\1/;q' || true)"; [ -n "$v" ] && { case "${v,,}" in v*) printf '%s' "$v";; *) printf 'v%s' "$v";; } && return; }; v="$(grep -m1 -o -E 'v[0-9]+(\.[0-9]+)*' "$f" 2>/dev/null || true)"; [ -n "$v" ] && printf '%s' "$v" || printf 'v0.0.0'; }
+_make_name(){ local base="$1" ver="$2" ts="$3"; local name="${base%.*}" ext="${base##*.}"; [ "$ext" = "$base" ] && ext="sh"; printf '%s_%s_%s.%s' "$name" "$ver" "$ts" "$ext"; }
+
+# Backup functions
+_backup_one() {
+  local src="$1" dry="$2"
+  if [ ! -f "$src" ]; then echo "⚠️  Not a file: $src"; _log "Skip not-file: $src"; return; fi
+  local base ver ts destdir dest
+  base="$(basename "$src")"
+  ver="$(_version_from_filename "$base")"
+  [ -z "$ver" ] && ver="$(_version_from_file "$src")"
+  ts="$(_now_ts)"
+  destdir="$CENTRAL_BACKUP/$(basename "$(dirname "$src")")"
+  mkdir -p "$destdir"
+  dest="$destdir/$(_make_name "$base" "$ver" "$ts")"
+  if [ "$dry" = "yes" ]; then
+    _dbml_draw line "DRY-RUN" "$src -> $dest"
+    _log "DRY: $src -> $dest"
+  else
+    cp -p -- "$src" "$dest" && sync
+    _dbml_draw line "COPIED" "$src -> $dest"
+    _log "COPIED: $src -> $dest"
+  fi
+}
+
+_process_dir() {
+  local dir="$1" dry="$2"
+  _dbml_draw double "PROCESSING" "Dir: $dir" "Central: $CENTRAL_BACKUP"
+  local f
+  for f in "$dir"/*; do
+    [ -f "$f" ] && _backup_one "$f" "$dry"
+  done
+  _dbml_draw line "DONE" "Processed: $dir"
+}
+
+# Interactive menu (explicit visible prints)
+while true; do
+  echo
+  _dbml_draw double "SMART BACKUP MENU (SBM)" "1) Dry-run directory" "2) Execute backup directory" "3) Dry-run file" "4) Execute backup file" "5) Exit"
+  printf "> Choose 1-5: " >&2
+  read -r opt || { echo "Input closed"; exit 1; }
+  case "$opt" in
+    1)
+      printf "Enter directory path (or ESC to cancel): " >&2
+      read -r d || { echo; continue; }
+      [ -z "$d" ] && continue
+      rp="$(_resolve "$d")"
+      _process_dir "$rp" "yes"
+      ;;
+    2)
+      printf "Enter directory path (or ESC to cancel): " >&2
+      read -r d || { echo; continue; }
+      [ -z "$d" ] && continue
+      rp="$(_resolve "$d")"
+      _process_dir "$rp" "no"
+      ;;
+    3)
+      printf "Enter file path (or ESC to cancel): " >&2
+      read -r f || { echo; continue; }
+      [ -z "$f" ] && continue
+      rp="$(_resolve "$f")"
+      _backup_one "$rp" "yes"
+      ;;
+    4)
+      printf "Enter file path (or ESC to cancel): " >&2
+      read -r f || { echo; continue; }
+      [ -z "$f" ] && continue
+      rp="$(_resolve "$f")"
+      _backup_one "$rp" "no"
+      ;;
+    5) echo "Exit."; exit 0;;
+    *) echo "Invalid option."; continue;;
+  esac
+done

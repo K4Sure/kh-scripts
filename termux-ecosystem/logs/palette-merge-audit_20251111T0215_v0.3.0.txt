@@ -1,0 +1,30 @@
+Palette merge audit: 20251111T0215 (Asia/Kuala_Lumpur)
+
+=== Running unit-style tests ===
+Running CML palette unit test:
+FAIL: missing key a
+CML tests failed
+
+=== Files with version tokens (sample) ===
+lib/cml/cml_v1.0.0.sh
+lib/cml/src/cml_palette_v0.2.0.sh
+lib/cml/src/cml_palette_v0.3.0.sh
+lib/cml/src/palette_loader_v0.1.0.sh
+lib/cml/tests/palette_merge_test_v0.1.0.sh
+lib/cml/themes/theme-dark_v1.0.0.yaml
+lib/cml/themes/theme-default_v1.0.0.yaml
+lib/cml/themes/theme-default_v1.0.1.yaml
+lib/csml/csml_v1.0.0.sh
+lib/dbml/dbml_v1.0.0.sh
+lib/dbml/presets/box-thick_v1.0.0.conf
+lib/dbml/presets/box-thin_v1.0.0.conf
+lib/dbml/presets/box-thin_v1.0.1.conf
+lib/dbml/src/box_renderer_v0.1.0.sh
+lib/pml/pml-helper_v1.0.0.sh
+lib/pml/pml_v1.0.0.sh
+lib/pml/wrappers/dl-wrapper_v1.0.0.sh
+lib/pml/wrappers/job-runner_v1.0.0.sh
+lib/python-helpers/json-tool_v1_0_0.py
+lib/python-helpers/json-tool_v1_0_1.py
+lib/python-helpers/manifest-gen_v1_0_0.py
+lib/python-helpers/manifest-gen_v1_0_1.py

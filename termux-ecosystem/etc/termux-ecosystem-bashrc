@@ -1,0 +1,4 @@
+# file: termux-ecosystem-bashrc
+# version: 0.1.0
+# description: Environment bootstrap fragment for termux-ecosystem (TE_HOME, PATH, source order).
+# (This file is meant to be sourced from your ~/.profile manually.)

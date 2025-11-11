@@ -1,0 +1,15 @@
+# --- patched ACTIVE THEME block (deterministic) ---
+CURRENT_THEME=$(awk 'NF{print; exit}' "$THEME_FILE" 2>/dev/null || printf 'CLASSIC')
+CURRENT_THEME=$(printf '%s' "$CURRENT_THEME" | tr -d '\r\n')
+CURRENT_THEME="${CURRENT_THEME^^}"
+# print with deterministic per-theme color mapping (uses rgb_fg_print helper)
+case "${CURRENT_THEME}" in
+  NEON:RED*)    rgb_fg_print 255 64 64  "✔ ACTIVE THEME: ${CURRENT_THEME}" ;;
+  NEON:ORANGE*) rgb_fg_print 255 165 0  "✔ ACTIVE THEME: ${CURRENT_THEME}" ;;
+  NEON:YELLOW*) rgb_fg_print 255 210 0  "✔ ACTIVE THEME: ${CURRENT_THEME}" ;;
+  NEON:GREEN*)  rgb_fg_print   0 255 120 "✔ ACTIVE THEME: ${CURRENT_THEME}" ;;
+  NEON:BLUE*)   rgb_fg_print  30 144 255 "✔ ACTIVE THEME: ${CURRENT_THEME}" ;;
+  NEON:PURPLE*) rgb_fg_print 200 100 255 "✔ ACTIVE THEME: ${CURRENT_THEME}" ;;
+  *)            printf "✔ ACTIVE THEME: %s\n" "${CURRENT_THEME:-(unknown)}" ;;
+esac
+# --- end patched block ---

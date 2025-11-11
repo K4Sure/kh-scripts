@@ -1,0 +1,17 @@
+
+## Termux Ecosystem helper commands
+
+- Copypad helper: `copypad` (installed to Termux system bin).
+- Run local audit: `scripts/ci-audit.sh`
+- Run quick palette test: `tests/test_palette.sh`
+- Restore latest bin/cml backup: `cp -a backups/$(ls -1t backups | grep cml | head -n1) bin/cml && chmod +x bin/cml`
+- Logs: `logs/swatches.log` and `logs/ci/*`
+
+
+### Quick local bootstrap (Termux)
+1. Ensure termux-api installed: `pkg install -y termux-api`
+2. Ensure copypad is available: `copypad` (or `~/bin/copypad`)
+3. Run local audit: `bash scripts/ci-audit.sh`
+4. Run tests: `bash tests/matrix-run.sh`
+5. Inspect logs: `ls -1 logs/ci tests/logs`
+

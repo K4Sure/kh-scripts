@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+set -e
+cmd="$1"; shift || true
+case "$cmd" in
+  palette)
+    # route to normalized wrapper
+    exec lib/cml/src/cml_palette_norm_wrap_v0.1.0.sh "$@"
+    ;;
+  ""|help|-h|--help)
+    cat <<USAGE
+cml — local-first CLI
+Usage:
+  cml palette <base|edge_base|path> [override.yaml ... | -]
+Notes:
+  - Stdin overrides: pipe raw key:"#hex"; "-" auto-added when piped.
+  - Last-wins: later inputs override earlier ones.
+  - Normalized: keys lowercase; values trimmed and de-quoted.
+USAGE
+    ;;
+  *)
+    echo "Unknown command: $cmd" >&2
+    exit 2
+    ;;
+esac
