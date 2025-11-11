@@ -1,7 +1,7 @@
-version: 1.0.0
 # Version: 1.0.0
 # Branded Theme (audit: 20251111T101656)
-name: base
+version: 1.0.0
+name: edge_ovr
 palette:
-  a: "#000000"
-  b: "#111111"
+  y: "#030303"
+  z: "#040404"
