@@ -1,0 +1,118 @@
+# Branded Shim Wrapper
+#!/usr/bin/env bash
+# propagate-shims.sh v0.1.0 (local-only, audit-first)
+# - Dry-run by default; no edits unless --apply is used
+# - Logs saved to termux-ecosystem/logs with Malaysia Time
+# - Single, deterministic pass; human-paced and reversible
+
+set -euo pipefail
+
+# Malaysia Time stamp (local device TZ)
+TS="$(date +%Y%m%dT%H%M%S)"
+LOG_DIR="$HOME/kh-scripts/termux-ecosystem/logs"
+LOG_FILE="$LOG_DIR/_shim_propagation_${TS}.log"
+
+APPLY=0
+BACKUP=0
+TARGET_ROOT="$HOME/kh-scripts"
+
+usage() {
+  cat <<USAGE
+Usage: $0 [--apply] [--backup] [--root <dir>]
+  --apply   Perform changes (otherwise dry-run)
+  --backup  Create pre-apply backups with Malaysia Time
+  --root    Target root (default: $TARGET_ROOT)
+USAGE
+}
+
+# Parse args
+while [ "${1:-}" != "" ]; do
+  case "$1" in
+    --apply) APPLY=1 ;;
+    --backup) BACKUP=1 ;;
+    --root) shift; TARGET_ROOT="${1:-$TARGET_ROOT}" ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown arg: $1"; usage; exit 2 ;;
+  esac
+  shift
+done
+
+mkdir -p "$LOG_DIR"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
+echo "=== Shim propagation started (TS=$TS, root=$TARGET_ROOT) ==="
+echo "Mode: $( [ "$APPLY" -eq 1 ] && echo APPLY || echo DRY-RUN ), Backup: $( [ "$BACKUP" -eq 1 ] && echo ON || echo OFF )"
+echo "Log: $LOG_FILE"
+
+# Selection: find candidate shims/helpers (brand-friendly names)
+# Adjust patterns to your brand vocabulary (e.g., te-*, cml-*, pml-*, dbml-*)
+mapfile -t files < <(find "$TARGET_ROOT" -type f -name '*shim*.sh' -o -name 'te-*.sh' -o -name '*-wrapper*.sh')
+
+echo "Found ${#files[@]} candidate files"
+for f in "${files[@]}"; do
+  # Rules:
+  # 1) Ensure executable bit
+  # 2) Ensure branded header line (idempotent)
+  # 3) Ensure Unicode-safe notices (no 'tr' usage)
+  # 4) Write per-file audit line
+  # All changes gated behind --apply; dry-run prints intent only
+
+  want_exec=""
+  want_header=""
+  want_unicode_note=""
+
+  # Check executable
+  if [ ! -x "$f" ]; then want_exec="set +x"; fi
+
+  # Check header (first line)
+  first_line="$(head -n1 "$f" || true)"
+  if ! printf '%s' "$first_line" | grep -q 'Branded Shim Wrapper'; then
+    want_header="# Branded Shim Wrapper"
+  fi
+
+  # Check for 'tr' (should be absent)
+  if grep -Iq . "$f"; then
+    if grep -n -E '\btr\b' "$f" >/dev/null 2>&1; then
+      want_unicode_note="# NOTE: replace legacy 'tr' with Unicode-safe helper (already enforced ecosystem-wide)"
+    fi
+  fi
+
+  echo "---"
+  echo "File: $f"
+  echo "Plan: exec=${want_exec:+FIX} header=${want_header:+ADD} unicode=${want_unicode_note:+NOTE}"
+
+  if [ "$APPLY" -eq 1 ]; then
+    if [ "$BACKUP" -eq 1 ]; then
+      bdir="$TARGET_ROOT/backups/shim_propagation_${TS}"
+      mkdir -p "$bdir"
+      cp -p "$f" "$bdir/$(basename "$f").orig"
+      echo "Backup: $bdir/$(basename "$f").orig"
+    fi
+    [ -n "$want_exec" ] && chmod +x "$f"
+    if [ -n "$want_header" ]; then
+      # Prepend header idempotently
+      tmp="$f.tmp.$TS"
+      { echo "$want_header"; cat "$f"; } > "$tmp"
+      mv "$tmp" "$f"
+    fi
+    if [ -n "$want_unicode_note" ]; then
+      # Append a note (non-functional, audit clarity)
+      echo "$want_unicode_note" >> "$f"
+    fi
+    echo "Applied: $f"
+  else
+    echo "Dry-run only: no changes applied"
+  fi
+done
+
+echo "=== Summary ==="
+echo "Total files: ${#files[@]}"
+applied_count=0
+if [ "$APPLY" -eq 1 ]; then
+  applied_count="${#files[@]}"
+fi
+echo "Applied: $applied_count"
+echo "Backups: $( [ "$BACKUP" -eq 1 ] && echo 'created under backups/shim_propagation_'$TS || echo 'OFF' )"
+echo "Audit log: $LOG_FILE"
+echo "=== Done ==="
+# NOTE: replace legacy 'tr' with Unicode-safe helper (already enforced ecosystem-wide)

@@ -1,4 +1,3 @@
-# Branded Shim Wrapper
 #!/usr/bin/env sh
 # lib smoke v1.4.0 - exercise cml merge and dbml preset renderer
 set -e
