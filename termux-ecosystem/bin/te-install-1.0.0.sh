@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Branded Shim Wrapper
 #!/usr/bin/env bash
 set -euo pipefail

@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+# Auto-inserted arg guard (idempotent)
+if [ "$#" -lt 1 ]; then echo "Usage: te-run <subcommand> [args...] (or use --smoke-check)"; exit 2; fi
 # Branded Shim Wrapper
 #!/usr/bin/env bash
 set -euo pipefail

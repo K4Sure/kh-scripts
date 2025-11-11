@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+# Auto-inserted arg guard (idempotent)
+: # te-smoke intentionally accepts zero args
 # Branded Shim Wrapper
 #!/usr/bin/env bash
 # te-smoke.sh

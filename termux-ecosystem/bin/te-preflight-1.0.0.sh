@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Branded Shim Wrapper
 #!/usr/bin/env bash
 # script: /bin/te-preflight-1.0.0.sh
