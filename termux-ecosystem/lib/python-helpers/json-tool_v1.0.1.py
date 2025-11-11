@@ -5,7 +5,7 @@
 # notes: to be expanded with actual utilities
 
 def main():
-    print("json-tool placeholder executed")
+    echo "json-tool_v1.0.1.py placeholder executed"
 
 if __name__ == "__main__":
     main()
