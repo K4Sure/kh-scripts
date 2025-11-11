@@ -1,3 +1,4 @@
+TMPDIR="${XDG_RUNTIME_DIR:-$HOME/.cache/tmp}"
 #!/usr/bin/env sh
 # manifest-fix v1.0.0 - non-destructive fixer: prints suggested JSON to stdout (dry-run) or --apply to overwrite
 set -eu
